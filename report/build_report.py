@@ -84,7 +84,7 @@ def build_html(cfg: Dict[str, Any], metrics: Dict[str, Any]) -> str:
     size: A4 portrait;
     margin: 15mm 15mm 16mm 15mm;
     @top-right {{
-      content: "Deep Learning (D6421) — Sesi 07: Generative Models";
+      content: "Deep Learning (D6421): Sesi 07, Generative Models";
       font-size: 7.5pt;
       color: #64748b;
       font-family: "Segoe UI", Arial, sans-serif;
@@ -201,20 +201,20 @@ def build_html(cfg: Dict[str, Any], metrics: Dict[str, Any]) -> str:
     width: 100%;
     border-collapse: collapse;
     font-family: "Segoe UI", Arial, sans-serif;
-    font-size: 8pt;
-    margin: 7px 0 10px 0;
+    font-size: 7.9pt;
+    margin: 5px 0 8px 0;
     break-inside: avoid;
   }}
   .data-table th {{
     background: #1e3a8a;
     color: #ffffff;
     font-weight: 700;
-    padding: 5px 6px;
+    padding: 4.5px 5.5px;
     border: 1px solid #1e3a8a;
     text-align: left;
   }}
   .data-table td {{
-    padding: 4.5px 6px;
+    padding: 3.6px 5.5px;
     border: 1px solid #cbd5e1;
     vertical-align: top;
   }}
@@ -235,13 +235,13 @@ def build_html(cfg: Dict[str, Any], metrics: Dict[str, Any]) -> str:
   .diagram-grid {{
     display: grid;
     grid-template-columns: 1fr;
-    gap: 6px;
-    margin: 6px 0 9px 0;
+    gap: 5px;
+    margin: 5px 0 7px 0;
   }}
   .diagram-card {{
     border: 1px solid #cbd5e1;
     border-radius: 4px;
-    padding: 5px 8px;
+    padding: 4px 7px;
     background: #ffffff;
     break-inside: avoid;
   }}
@@ -328,17 +328,17 @@ def build_html(cfg: Dict[str, Any], metrics: Dict[str, Any]) -> str:
   </tr>
 </table>
 
-<p>Laporan ilmiah ini memaparkan investigasi teoretis dan empiris atas enam paradigma pemodelan generatif dari materi Sesi 06 dan Sesi 07—yakni <strong>Vanilla Autoencoder</strong>, <strong>Sparse Autoencoder</strong>, <strong>Variational Autoencoder (VAE)</strong>, <strong>Vanilla GAN</strong> (berbasis MLP), <strong>Deep Convolutional GAN (DCGAN)</strong>, serta <strong>Denoising Diffusion Probabilistic Models (DDPM)</strong>—bersama satu model pendamping <strong>MLP Classifier</strong> untuk membuktikan secara matematis dan eksperimental mengapa representasi fitur diskriminatif tidak dapat langsung difungsikan sebagai generator citra.</p>
+<p>Laporan ini membandingkan enam arsitektur generatif dari materi Sesi 06 dan Sesi 07 (Vanilla Autoencoder, Sparse Autoencoder, Variational Autoencoder, Vanilla GAN berbasis MLP, Deep Convolutional GAN, dan Denoising Diffusion Probabilistic Model) bersama satu model pendamping MLP Classifier. Pengujian berfokus pada pertukaran antara fidelitas rekonstruksi, ketajaman sampel, kestabilan pelatihan, dan latensi inferensi, sekaligus membuktikan mengapa fitur klasifikasi terawasi tidak dapat langsung dipakai untuk membangkitkan citra.</p>
 
 <div class="callout">
   <div class="callout-title">Prinsip Evaluasi Terstandarisasi</div>
-  Seluruh model dilatih dan dievaluasi secara seragam pada benchmark <strong>Fashion-MNIST</strong> ({ds['name']}, 70.000 citra 28×28 grayscale, 10 kelas pakaian) menggunakan penetapan random seed deterministik <code>seed={ds['seed']}</code> (Python, NumPy, PyTorch CUDA), pembagian data terstratifikasi <strong>80% Train ({ds['train_size']:,} citra) / 10% Validation ({ds['val_size']:,} citra) / 10% Test ({ds['test_size']:,} citra)</strong>, serta <code>batch_size={ds['batch_size']}</code> (<code>shuffle=True</code> pada train, <code>shuffle=False</code> pada validation/test). Seluruh metrik numerik dan visualisasi diukur pada Test Set yang belum pernah dilihat selama pelatihan di GPU NVIDIA GeForce RTX 4060 Laptop (8 GB VRAM).
+  Seluruh model dilatih dan diuji pada dataset Fashion-MNIST ({ds['name']}, 70.000 citra 28×28 grayscale dalam 10 kelas pakaian) dengan <code>seed={ds['seed']}</code> di Python, NumPy, dan PyTorch CUDA. Pembagian data dilakukan secara terstratifikasi menjadi 80% Train ({ds['train_size']:,} citra), 10% Validation ({ds['val_size']:,} citra), dan 10% Test ({ds['test_size']:,} citra) dengan <code>batch_size={ds['batch_size']}</code> (<code>shuffle=True</code> pada train, <code>shuffle=False</code> pada validation dan test). Semua angka metrik dan visualisasi berasal dari Test Set pada GPU NVIDIA GeForce RTX 4060 Laptop (8 GB VRAM).
 </div>
 
 <!-- ==================== BAGIAN II ==================== -->
 <h2 class="section-hdr">Bagian II: Landasan Teori, Desain Arsitektur, dan Formulasi Matematika</h2>
 
-<p>Perbedaan perilaku empiris antarmodel generatif berakar langsung pada hubungan kausal antara <em>inductive bias</em> arsitektur (lapisan <em>fully-connected</em> versus konvolusional berhierarki spasial) dan bentuk fungsi objektif yang dioptimasi. Diagram skematik arsitektur keenam model generatif beserta model MLP Classifier pendamping disajikan di bawah ini.</p>
+<p>Perbedaan hasil antarmodel pada citra pakaian muncul dari dua sumber: bias arsitektur (lapisan fully-connected dibanding konvolusi spasial) dan bentuk fungsi loss yang dioptimasi. Ketujuh arsitektur yang diuji mengikuti rancangan skematik berikut.</p>
 
 {svgs_html}
 
@@ -424,23 +424,23 @@ def build_html(cfg: Dict[str, Any], metrics: Dict[str, Any]) -> str:
 
 <h3 class="sub-hdr">2.2 Formulasi Matematika Fungsi Loss Objektif</h3>
 <div class="eq-box">
-  <strong>1. MLP Classifier (Cross-Entropy):</strong> &nbsp; ℒ<sub>CE</sub> = −(1/N) ∑<sub>i=1..N</sub> ∑<sub>c=1..10</sub> y<sub>i,c</sub> log softmax(W<sub>3</sub> z<sub>MLP,i</sub> + b<sub>3</sub>)<sub>c</sub> &nbsp;— memodelkan <em>P</em>(<em>y</em>|<em>x</em>).<br/>
-  <strong>2. Vanilla Autoencoder (Pixel-wise MSE):</strong> &nbsp; ℒ<sub>AE</sub> = (1/784) ‖<em>x</em> − <em>D</em><sub>θ</sub>(<em>E</em><sub>φ</sub>(<em>x</em>))‖<sub>2</sub><sup>2</sup>.<br/>
-  <strong>3. Sparse Autoencoder (MSE + L1 Sparsity):</strong> &nbsp; ℒ<sub>SAE</sub> = (1/784) ‖<em>x</em> − <em>x̂</em>‖<sub>2</sub><sup>2</sup> + λ · (1/64) ∑<sub>j=1..64</sub> |<em>z</em><sub>j</sub>|, dengan λ = 5×10<sup>−3</sup>.<br/>
-  <strong>4. Variational Autoencoder (ELBO):</strong> &nbsp; ℒ<sub>VAE</sub> = −𝔼<sub><em>q</em><sub>φ</sub>(<em>z</em>|<em>x</em>)</sub>[log <em>p</em><sub>θ</sub>(<em>x</em>|<em>z</em>)] + <em>D</em><sub>KL</sub>(<em>q</em><sub>φ</sub>(<em>z</em>|<em>x</em>) ∥ 𝒩(0, <strong>I</strong>)), dimana <em>D</em><sub>KL</sub> = −½ ∑(1 + log σ² − μ² − σ²) dan <em>z</em> = μ + σ ⊙ ε.<br/>
-  <strong>5. Vanilla GAN &amp; DCGAN (Minimax Game):</strong> &nbsp; min<sub>G</sub> max<sub>D</sub> <em>V</em>(<em>D</em>,<em>G</em>) = 𝔼<sub><em>x</em>~<em>p</em><sub>data</sub></sub>[log <em>D</em>(<em>x</em>)] + 𝔼<sub><em>z</em>~𝒩(0,<strong>I</strong>)</sub>[log(1 − <em>D</em>(<em>G</em>(<em>z</em>)))], dilatih dengan objektif <em>non-saturating</em> Generator −𝔼[log <em>D</em>(<em>G</em>(<em>z</em>))].<br/>
-  <strong>6. DDPM (Variational Noise-Prediction MSE):</strong> &nbsp; ℒ<sub>simple</sub>(θ) = 𝔼<sub><em>t</em>~𝒰(1,<em>T</em>), <em>x</em><sub>0</sub>, ε~𝒩(0,<strong>I</strong>)</sub>[‖ε − ε<sub>θ</sub>(√ᾱ<sub><em>t</em></sub> <em>x</em><sub>0</sub> + √(1 − ᾱ<sub><em>t</em></sub>) ε, <em>t</em>)‖<sub>2</sub><sup>2</sup>], dengan jadwal varians linear β<sub><em>t</em></sub> ∈ [10<sup>−4</sup>, 0.02] untuk <em>T</em> = 1000 langkah.
+  1. MLP Classifier (Cross-Entropy): &nbsp; ℒ<sub>CE</sub> = −(1/N) ∑<sub>i=1..N</sub> ∑<sub>c=1..10</sub> y<sub>i,c</sub> log softmax(W<sub>3</sub> z<sub>MLP,i</sub> + b<sub>3</sub>)<sub>c</sub>, yang memodelkan <em>P</em>(<em>y</em>|<em>x</em>).<br/>
+  2. Vanilla Autoencoder (Pixel-wise MSE): &nbsp; ℒ<sub>AE</sub> = (1/784) ‖<em>x</em> − <em>D</em><sub>θ</sub>(<em>E</em><sub>φ</sub>(<em>x</em>))‖<sub>2</sub><sup>2</sup>.<br/>
+  3. Sparse Autoencoder (MSE + L1 Sparsity): &nbsp; ℒ<sub>SAE</sub> = (1/784) ‖<em>x</em> − <em>x̂</em>‖<sub>2</sub><sup>2</sup> + λ · (1/64) ∑<sub>j=1..64</sub> |<em>z</em><sub>j</sub>|, dengan λ = 5×10<sup>−3</sup>.<br/>
+  4. Variational Autoencoder (ELBO): &nbsp; ℒ<sub>VAE</sub> = −𝔼<sub><em>q</em><sub>φ</sub>(<em>z</em>|<em>x</em>)</sub>[log <em>p</em><sub>θ</sub>(<em>x</em>|<em>z</em>)] + <em>D</em><sub>KL</sub>(<em>q</em><sub>φ</sub>(<em>z</em>|<em>x</em>) ∥ 𝒩(0, <strong>I</strong>)), dimana <em>D</em><sub>KL</sub> = −½ ∑(1 + log σ² − μ² − σ²) dan <em>z</em> = μ + σ ⊙ ε.<br/>
+  5. Vanilla GAN &amp; DCGAN (Minimax Game): &nbsp; min<sub>G</sub> max<sub>D</sub> <em>V</em>(<em>D</em>,<em>G</em>) = 𝔼<sub><em>x</em>~<em>p</em><sub>data</sub></sub>[log <em>D</em>(<em>x</em>)] + 𝔼<sub><em>z</em>~𝒩(0,<strong>I</strong>)</sub>[log(1 − <em>D</em>(<em>G</em>(<em>z</em>)))], dilatih dengan objektif <em>non-saturating</em> Generator −𝔼[log <em>D</em>(<em>G</em>(<em>z</em>))].<br/>
+  6. DDPM (Variational Noise-Prediction MSE): &nbsp; ℒ<sub>simple</sub>(θ) = 𝔼<sub><em>t</em>~𝒰(1,<em>T</em>), <em>x</em><sub>0</sub>, ε~𝒩(0,<strong>I</strong>)</sub>[‖ε − ε<sub>θ</sub>(√ᾱ<sub><em>t</em></sub> <em>x</em><sub>0</sub> + √(1 − ᾱ<sub><em>t</em></sub>) ε, <em>t</em>)‖<sub>2</sub><sup>2</sup>], dengan jadwal varians linear β<sub><em>t</em></sub> ∈ [10<sup>−4</sup>, 0.02] untuk <em>T</em> = 1000 langkah.
 </div>
 
 <!-- ==================== BAGIAN III ==================== -->
 <h2 class="section-hdr">Bagian III: Pembuktian Teoretis dan Empiris Batasan MLP Classifier untuk Image Generation</h2>
 
-<p>Meskipun lapisan ekstraktor fitur MLP Classifier (<code>784 → 256 → 64</code>) memiliki topologi identik dengan bagian Encoder pada Autoencoder, bobot terlatih <em>W</em><sup>(<em>l</em>)</sup> dan fitur laten <em>z</em><sub>MLP</sub> ∈ ℝ<sup>64</sup> gagal melakukan rekonstruksi dan sintesis citra karena tiga batasan matematis fundamental:</p>
+<p>Lapisan ekstraktor fitur MLP Classifier (<code>784 → 256 → 64</code>) punya topologi yang sama persis dengan Encoder pada Autoencoder. Namun, bobot terlatih <em>W</em><sup>(<em>l</em>)</sup> dan fitur laten <em>z</em><sub>MLP</sub> ∈ ℝ<sup>64</sup> gagal merekonstruksi maupun membangkitkan citra karena tiga batasan matematis:</p>
 
 <ol>
-  <li><strong>Information Bottleneck Pemodelan <em>P</em>(<em>y</em>|<em>x</em>) vs. <em>P</em>(<em>x</em>):</strong> Cross-Entropy Loss memaksimalkan separabilitas antar-10 kelas (<em>inter-class margin</em>). Akibatnya, jaringan menekan dan membuang variasi spasial intra-kelas (ketebalan garis, lipatan kain, orientasi kerah, corak tekstur) yang tidak relevan terhadap keputusan kelas, berbeda dengan model generatif yang memodelkan kerapatan data penuh <em>P</em>(<em>x</em>).</li>
-  <li><strong>Non-Ortogonalitas Matriks Bobot &amp; Ireversibilitas ReLU:</strong> Matriks bobot persegi panjang <em>W</em><sup>(<em>l</em>)</sup> tidak memenuhi (<em>W</em><sup>(<em>l</em>)</sup>)<sup>T</sup> <em>W</em><sup>(<em>l</em>)</sup> = <strong>I</strong> sehingga <em>W</em><sup>T</sup> ≠ <em>W</em><sup>−1</sup>. Pengukuran langsung pada bobot terlatih menghasilkan deviasi ortogonalitas relatif ‖<em>W</em><sup>T</sup><em>W</em> − <strong>I</strong>‖<sub>F</sub> / ‖<strong>I</strong>‖<sub>F</sub> sebesar <strong>{mlp['orthogonality']['W1_orthogonality_error']:.4f}</strong> (<em>W</em><sub>1</sub>), <strong>{mlp['orthogonality']['W2_orthogonality_error']:.4f}</strong> (<em>W</em><sub>2</sub>), dan <strong>{mlp['orthogonality']['W3_orthogonality_error']:.4f}</strong> (<em>W</em><sub>3</sub>). Selain itu, aktivasi ReLU(<em>u</em>) = max(0, <em>u</em>) memotong komponen negatif secara ireversibel (tercatat <strong>{mlp['z_mlp_zero_fraction']*100:.2f}%</strong> elemen <em>z</em><sub>MLP</sub> bernilai tepat nol).</li>
-  <li><strong>Ketiadaan Regularisasi Prior <em>P</em>(<em>z</em>):</strong> Ruang laten <em>z</em><sub>MLP</sub> tidak dikekang ke distribusi prior kontinu seperti 𝒩(0, <strong>I</strong>). Pada Test Set, vektor rata-rata fitur memiliki norma ‖μ<sub><em>z</em></sub>‖<sub>2</sub> = <strong>{mlp['z_mlp_mu_norm']:.2f}</strong> dengan rata-rata simpangan baku σ̄<sub><em>z</em></sub> = <strong>{mlp['z_mlp_sigma_mean']:.2f}</strong> serta sebaran asimetris akibat ReLU.</li>
+  <li>Information bottleneck dari pemodelan <em>P</em>(<em>y</em>|<em>x</em>): Cross-Entropy Loss mendorong pemisahan antar-10 kelas, sehingga jaringan membuang variasi spasial intra-kelas (ketebalan garis, lipatan kain, corak baju) yang tidak dibutuhkan untuk menebak label. Model generatif sebaliknya harus menjaga informasi untuk memodelkan kerapatan data <em>P</em>(<em>x</em>).</li>
+  <li>Matriks bobot non-ortogonal dan pemotongan ReLU: Bobot persegi panjang <em>W</em><sup>(<em>l</em>)</sup> tidak memenuhi (<em>W</em><sup>(<em>l</em>)</sup>)<sup>T</sup> <em>W</em><sup>(<em>l</em>)</sup> = <strong>I</strong>, jadi <em>W</em><sup>T</sup> ≠ <em>W</em><sup>−1</sup>. Pengukuran pada model terlatih mencatat deviasi ortogonalitas relatif ‖<em>W</em><sup>T</sup><em>W</em> − <strong>I</strong>‖<sub>F</sub> / ‖<strong>I</strong>‖<sub>F</sub> sebesar {mlp['orthogonality']['W1_orthogonality_error']:.4f} (<em>W</em><sub>1</sub>), {mlp['orthogonality']['W2_orthogonality_error']:.4f} (<em>W</em><sub>2</sub>), dan {mlp['orthogonality']['W3_orthogonality_error']:.4f} (<em>W</em><sub>3</sub>). Selain itu, fungsi ReLU(<em>u</em>) = max(0, <em>u</em>) membuang nilai negatif secara ireversibel, membuat {mlp['z_mlp_zero_fraction']*100:.2f}% komponen <em>z</em><sub>MLP</sub> bernilai tepat nol.</li>
+  <li>Tanpa regularisasi prior <em>P</em>(<em>z</em>): Ruang laten <em>z</em><sub>MLP</sub> tidak dikekang ke distribusi prior seperti 𝒩(0, <strong>I</strong>). Pada Test Set, vektor rata-rata fitur memiliki norma ‖μ<sub><em>z</em></sub>‖<sub>2</sub> = {mlp['z_mlp_mu_norm']:.2f} dengan rata-rata simpangan baku σ̄<sub><em>z</em></sub> = {mlp['z_mlp_sigma_mean']:.2f} dan sebaran miring akibat ReLU.</li>
 </ol>
 
 <table class="data-table">
@@ -455,42 +455,42 @@ def build_html(cfg: Dict[str, Any], metrics: Dict[str, Any]) -> str:
   </thead>
   <tbody>
     <tr>
-      <td><strong>Tahap 1:</strong> MLP Classifier (784→256→64→10)</td>
-      <td class="num">—</td><td class="num">—</td><td class="num">—</td>
-      <td>Test Acc = <strong>{mlp['test_accuracy']*100:.2f}%</strong> (Val = {mlp['val_accuracy']*100:.2f}%, melampaui syarat ≥ 88%)</td>
+      <td>Tahap 1: MLP Classifier (784→256→64→10)</td>
+      <td class="num">-</td><td class="num">-</td><td class="num">-</td>
+      <td>Test Acc = {mlp['test_accuracy']*100:.2f}% (Val = {mlp['val_accuracy']*100:.2f}%, di atas batas minimum 88%)</td>
     </tr>
     <tr>
-      <td><strong>Tahap 2:</strong> Proyeksi Balik Bobot <em>W</em><sup>T</sup> dari One-Hot <em>y</em><sub><em>c</em></sub></td>
+      <td>Tahap 2: Proyeksi Balik Bobot <em>W</em><sup>T</sup> dari One-Hot <em>y</em><sub><em>c</em></sub></td>
       <td class="num">{mlp['transpose_onehot_metrics']['mse']:.5f}</td>
       <td class="num">{mlp['transpose_onehot_metrics']['psnr']:.2f}</td>
       <td class="num">{mlp['transpose_onehot_metrics']['ssim']:.4f}</td>
-      <td>Pola bercak abu-abu seragam (superposisi template kelas kasar; <em>W</em><sup>T</sup> ≠ <em>W</em><sup>−1</sup>)</td>
+      <td>Pola bercak abu-abu seragam akibat superposisi template kasar (<em>W</em><sup>T</sup> ≠ <em>W</em><sup>−1</sup>)</td>
     </tr>
     <tr>
-      <td><strong>Tahap 3:</strong> Proyeksi Balik <em>W</em><sup>T</sup> dari Latent <em>z</em><sub>MLP</sub></td>
+      <td>Tahap 3: Proyeksi Balik <em>W</em><sup>T</sup> dari Latent <em>z</em><sub>MLP</sub></td>
       <td class="num">{mlp['transpose_latent_metrics']['mse']:.5f}</td>
       <td class="num">{mlp['transpose_latent_metrics']['psnr']:.2f}</td>
       <td class="num">{mlp['transpose_latent_metrics']['ssim']:.4f}</td>
-      <td>Artefak kontras biner ekstrem; bobot maju gagal berfungsi sebagai dekoder</td>
+      <td>Artefak kontras biner; bobot maju tidak dapat dibalik menjadi dekoder</td>
     </tr>
     <tr>
-      <td><strong>Tahap 4a:</strong> Frozen Latent Decoder (<em>z</em><sub>MLP</sub> ∈ ℝ<sup>64</sup>)</td>
+      <td>Tahap 4a: Frozen Latent Decoder (<em>z</em><sub>MLP</sub> ∈ ℝ<sup>64</sup>)</td>
       <td class="num">{mlp['frozen_decoder_metrics']['mse']:.5f}</td>
       <td class="num">{mlp['frozen_decoder_metrics']['psnr']:.2f}</td>
       <td class="num">{mlp['frozen_decoder_metrics']['ssim']:.4f}</td>
-      <td>Siluet kelas terpulihkan, tetapi tekstur &amp; detail spasial intra-kelas hilang ({mse_ratio:.2f}× MSE Vanilla AE)</td>
+      <td>Siluet kelas kembali terlihat, namun tekstur intra-kelas hilang ({mse_ratio:.2f}× MSE Vanilla AE)</td>
     </tr>
     <tr>
-      <td><strong>Tahap 4b (Pembanding):</strong> Vanilla AE (<em>z</em><sub>AE</sub> ∈ ℝ<sup>64</sup>)</td>
+      <td>Tahap 4b (Pembanding): Vanilla AE (<em>z</em><sub>AE</sub> ∈ ℝ<sup>64</sup>)</td>
       <td class="num">{m['vanilla_ae']['mse']:.5f}</td>
       <td class="num">{m['vanilla_ae']['psnr']:.2f}</td>
       <td class="num">{m['vanilla_ae']['ssim']:.4f}</td>
-      <td>Mempertahankan variasi intra-kelas karena tanpa penalti bottleneck diskriminatif</td>
+      <td>Menjaga detail intra-kelas karena dilatih untuk rekonstruksi penuh</td>
     </tr>
     <tr>
-      <td><strong>Tahap 5:</strong> Prior Sampling <em>z</em><sub>rand</sub> ~ 𝒩(μ<sub><em>z</em></sub>, diag(σ<sub><em>z</em></sub><sup>2</sup>))</td>
-      <td class="num">—</td><td class="num">—</td><td class="num">—</td>
-      <td>Gagal membentuk objek utuh; menghasilkan pecahan siluet &amp; bercak inkoheren</td>
+      <td>Tahap 5: Prior Sampling <em>z</em><sub>rand</sub> ~ 𝒩(μ<sub><em>z</em></sub>, diag(σ<sub><em>z</em></sub><sup>2</sup>))</td>
+      <td class="num">-</td><td class="num">-</td><td class="num">-</td>
+      <td>Menghasilkan pecahan siluet dan bercak yang tidak membentuk pakaian utuh</td>
     </tr>
   </tbody>
 </table>
@@ -498,7 +498,7 @@ def build_html(cfg: Dict[str, Any], metrics: Dict[str, Any]) -> str:
 <!-- ==================== BAGIAN IV ==================== -->
 <h2 class="section-hdr">Bagian IV: Tabel Komparasi Metrik Numerik (Kompilasi Kuantitatif)</h2>
 
-<p>Seluruh metrik rekonstruksi (Test MSE, Test PSNR, Test SSIM) dievaluasi pada rentang piksel [0, 1] terhadap 7.000 citra Test Set. Skor <strong>FID (Fréchet Inception Distance)</strong> dihitung menggunakan fitur pool3 (2048-dimensi) dari InceptionV3 terlatih terhadap 7.000 citra sintetis versus 7.000 citra Test Set riil. Latensi inferensi diukur per batch 64 citra dengan <code>torch.cuda.synchronize()</code>.</p>
+<p>Metrik rekonstruksi (Test MSE, Test PSNR, Test SSIM) dihitung pada rentang piksel [0, 1] atas 7.000 citra Test Set. Skor FID (Fréchet Inception Distance) membandingkan fitur pool3 (2048 dimensi) dari InceptionV3 antara 7.000 citra sintetis dan 7.000 citra Test Set riil. Latensi inferensi diukur per batch 64 citra dengan <code>torch.cuda.synchronize()</code>.</p>
 
 <table class="data-table">
   <thead>
@@ -584,78 +584,78 @@ def build_html(cfg: Dict[str, Any], metrics: Dict[str, Any]) -> str:
   </tbody>
 </table>
 
-<p>Dari sisi representasi laten pada keluarga Autoencoder, penambahan penalti sparsity λ‖<em>z</em>‖<sub>1</sub> (λ = 5×10<sup>−3</sup>) berhasil menurunkan rata-rata norma L1 representasi laten dari <strong>{m['vanilla_ae']['latent_l1_mean']:.2f}</strong> (dengan hanya <strong>{m['vanilla_ae']['latent_zero_frac']*100:.2f}%</strong> unit hampir nol pada Vanilla AE) menjadi <strong>{m['sparse_ae']['latent_l1_mean']:.2f}</strong> dengan <strong>{m['sparse_ae']['latent_zero_frac']*100:.2f}%</strong> unit non-aktif (|<em>z</em>| &lt; 10<sup>−3</sup>) pada Sparse AE. Pada evaluasi generatif, terjadi lompatan kualitas dramatis antar-keluarga: <strong>DDPM</strong> mencatat FID terbaik (<strong>{m['ddpm']['fid']:.2f}</strong>), diikuti ketat oleh <strong>DCGAN</strong> (<strong>{m['dcgan']['fid']:.2f}</strong>), sementara <strong>VAE</strong> (<strong>{m['vae']['fid']:.2f}</strong>) dan <strong>Vanilla GAN</strong> (<strong>{m['vanilla_gan']['fid']:.2f}</strong>) tertinggal jauh akibat keburaman posterior Gaussian dan ketiadaan bias konvolusional.</p>
+<p>Penambahan penalti sparsity λ‖<em>z</em>‖<sub>1</sub> (λ = 5×10<sup>−3</sup>) menurunkan rata-rata norma L1 representasi laten dari {m['vanilla_ae']['latent_l1_mean']:.2f} pada Vanilla AE (hanya {m['vanilla_ae']['latent_zero_frac']*100:.2f}% unit mendekati nol) menjadi {m['sparse_ae']['latent_l1_mean']:.2f} pada Sparse AE dengan {m['sparse_ae']['latent_zero_frac']*100:.2f}% unit non-aktif (|<em>z</em>| &lt; 10<sup>−3</sup>). Pada pengujian kualitas generasi, skor FID terbagi jelas antarkeluarga: DDPM mencatat FID terendah ({m['ddpm']['fid']:.2f}), disusul DCGAN ({m['dcgan']['fid']:.2f}), sedangkan VAE ({m['vae']['fid']:.2f}) dan Vanilla GAN ({m['vanilla_gan']['fid']:.2f}) tertinggal jauh karena keburaman posterior Gaussian serta ketiadaan lapisan konvolusi.</p>
 
 <!-- ==================== BAGIAN V ==================== -->
 <h2 class="section-hdr page-break">Bagian V: Kompilasi Lima Visualisasi Komparatif Utama</h2>
 
 <div class="figure-block">
   <img src="{fig1_uri}" alt="Figur 1 Rekonstruksi Side-by-Side" />
-  <div class="fig-caption"><strong>Figur 1 — Grid Rekonstruksi Side-by-Side (Test Set):</strong> Perbandingan 8 kelas Fashion-MNIST antara citra asli dan rekonstruksi Vanilla AE (MSE {m['vanilla_ae']['mse']:.5f}), Sparse AE ({m['sparse_ae']['mse']:.5f}), serta VAE ({m['vae']['mse']:.5f}). Vanilla AE mempertahankan detail lokal paling tajam (pola kotak pada <em>Shirt</em> dan tekstur <em>Coat</em>), Sparse AE menghasilkan tepi sedikit lebih halus akibat pemangkasan {m['sparse_ae']['latent_zero_frac']*100:.2f}% aktivasi laten, sedangkan VAE tampak paling kabur karena regularisasi KL memaksa variasi lokal melebur menuju rata-rata posterior.</div>
+  <div class="fig-caption"><strong>Figur 1: Grid Rekonstruksi Side-by-Side (Test Set).</strong> Perbandingan 8 kelas Fashion-MNIST antara citra asli dan rekonstruksi Vanilla AE (MSE {m['vanilla_ae']['mse']:.5f}), Sparse AE ({m['sparse_ae']['mse']:.5f}), dan VAE ({m['vae']['mse']:.5f}). Vanilla AE menjaga detail lokal paling jelas (seperti motif kotak pada <em>Shirt</em> dan tekstur <em>Coat</em>), Sparse AE agak menghaluskan tepi karena memangkas {m['sparse_ae']['latent_zero_frac']*100:.2f}% aktivasi laten, dan VAE terlihat paling kabur karena regularisasi KL meratakan variasi lokal.</div>
 </div>
 
 <div class="figure-block">
   <img src="{fig2_uri}" alt="Figur 2 Random Generative Sampling 4x4" />
-  <div class="fig-caption"><strong>Figur 2 — Grid Random Generative Sampling (Kisi 4×4 per Model):</strong> Sampel acak dari prior 𝒩(0, <strong>I</strong>). <strong>Panel A (VAE, FID {m['vae']['fid']:.2f}):</strong> struktur global utuh namun tepi buram khas ekspektasi kondisional. <strong>Panel B (Vanilla GAN, FID {m['vanilla_gan']['fid']:.2f}):</strong> tepi kontras tinggi tetapi sarat derau piksel berbintik (<em>checkerboard/speckle noise</em>) karena generator MLP tidak memiliki lokalisasi spasial. <strong>Panel C (DCGAN, FID {m['dcgan']['fid']:.2f}):</strong> siluet pakaian dan sepatu jauh lebih tajam dan koheren berkat <em>strided transposed convolution</em> dan BatchNorm. <strong>Panel D (DDPM, FID {m['ddpm']['fid']:.2f}):</strong> sampel paling bersih, kontur tegas, gradasi tekstil halus, dan keragaman kelas paling merata.</div>
+  <div class="fig-caption"><strong>Figur 2: Grid Random Generative Sampling (Kisi 4×4 per Model).</strong> Sampel acak dari prior 𝒩(0, <strong>I</strong>). Panel A (VAE, FID {m['vae']['fid']:.2f}) membentuk struktur pakaian yang dapat dikenali tetapi tepinya buram. Panel B (Vanilla GAN, FID {m['vanilla_gan']['fid']:.2f}) menghasilkan kontras tinggi yang dipenuhi bintik derau piksel karena generator MLP tidak punya bias spasial. Panel C (DCGAN, FID {m['dcgan']['fid']:.2f}) menajamkan siluet berkat <em>strided transposed convolution</em> dan BatchNorm. Panel D (DDPM, FID {m['ddpm']['fid']:.2f}) memberi kontur paling bersih, gradasi kain halus, dan sebaran kelas merata.</div>
 </div>
 
 <div class="figure-block">
   <img src="{fig3_uri}" alt="Figur 3 Bukti Empiris MLP Classifier" />
-  <div class="fig-caption"><strong>Figur 3 — Bukti Empiris Batasan Bobot dan Latent Features MLP Classifier:</strong> <strong>(1)</strong> Citra uji asli. <strong>(2)</strong> Proyeksi balik langsung <em>W</em><sup>T</sup> dari <em>y</em><sub><em>c</em></sub> menghasilkan bercak abu-abu nyaris identik lintas kelas, sedangkan dari <em>z</em><sub>MLP</sub> menghasilkan pola biner kacau. <strong>(3)</strong> Frozen Latent Decoder hanya memulihkan siluet kasar kelas (PSNR {mlp['frozen_decoder_metrics']['psnr']:.2f} dB vs Vanilla AE {m['vanilla_ae']['psnr']:.2f} dB; misalnya detail corak <em>Shirt</em> paling kanan hilang total menjadi kemeja polos). <strong>(4)</strong> Sampling prior <em>z</em><sub>rand</sub> dari statistik <em>z</em><sub>MLP</sub> menghasilkan artefak rusak tidak berbentuk objek utuh.</div>
+  <div class="fig-caption"><strong>Figur 3: Bukti Empiris Batasan Bobot dan Latent Features MLP Classifier.</strong> (1) Citra uji asli. (2) Proyeksi balik langsung <em>W</em><sup>T</sup> dari <em>y</em><sub><em>c</em></sub> menghasilkan bercak abu-abu yang mirip di semua kelas, sementara dari <em>z</em><sub>MLP</sub> muncul pola biner acak. (3) Frozen Latent Decoder hanya memulihkan siluet kasar kelas (PSNR {mlp['frozen_decoder_metrics']['psnr']:.2f} dB dibanding Vanilla AE {m['vanilla_ae']['psnr']:.2f} dB; corak <em>Shirt</em> paling kanan hilang menjadi kemeja polos). (4) Sampling prior <em>z</em><sub>rand</sub> dari statistik <em>z</em><sub>MLP</sub> menghasilkan bentuk yang pecah dan tidak utuh.</div>
 </div>
 
 <div class="figure-block">
   <img src="{fig4_uri}" alt="Figur 4 Interpolasi Ruang Laten Linier" />
-  <div class="fig-caption"><strong>Figur 4 — Interpolasi Ruang Laten Linier <em>z</em>(α) = (1−α)<em>z</em><sub>A</sub> + α<em>z</em><sub>B</sub> (α ∈ [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]):</strong> Pada Vanilla AE dan Sparse AE, transisi antara <em>Sneaker</em> (α=0) dan <em>Dress</em> (α=1) melewati wilayah kosong ruang laten (<em>latent space voids</em>) pada α=0.4–0.6 sehingga muncul efek tumpang-tindih hantu (<em>ghosting</em>). Sebaliknya, VAE menunjukkan transisi probabilistik yang halus tanpa artefak pecah, Vanilla GAN mengalami transisi berderau, sedangkan DCGAN bertransformasi secara semantik tajam dari jaket → gaun → celana panjang.</div>
+  <div class="fig-caption"><strong>Figur 4: Interpolasi Ruang Laten Linier <em>z</em>(α) = (1−α)<em>z</em><sub>A</sub> + α<em>z</em><sub>B</sub> (α ∈ [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]).</strong> Pada Vanilla AE dan Sparse AE, perpindahan antara <em>Sneaker</em> (α=0) dan <em>Dress</em> (α=1) melewati ruang kosong (<em>latent space voids</em>) di sekitar α=0.4 sampai 0.6, memunculkan bayangan ganda. VAE bertransisi halus tanpa gambar pecah, Vanilla GAN tetap berderau di seluruh langkah, dan DCGAN beralih tajam dari jaket ke gaun lalu celana panjang.</div>
 </div>
 
 <div class="figure-block">
   <img src="{fig5_uri}" alt="Figur 5 Kurva Training Loss dan DDPM Denoising Trajectory" />
-  <div class="fig-caption"><strong>Figur 5 — Kurva Training Loss Keenam Model dan Trajektori Reverse Denoising DDPM:</strong> Vanilla AE, Sparse AE, dan VAE konvergen mulus tanpa gap overfitting antara kurva train dan validation. Pada Vanilla GAN terlihat lonjakan loss Generator di epoch awal ({vgan_g_max:.2f} pada epoch {vgan_g_max_ep}) sebelum stabil, sedangkan pada DCGAN Discriminator mendominasi ringan (D≈{dc_d_end:.2f}, G≈{dc_g_end:.2f}) namun tetap menghasilkan fitur konvolusional tajam. DDPM mencatat penurunan monoton Noise MSE ({ddpm_start:.4f} → {ddpm_end:.4f}) dengan kurva paling stabil; baris bawah memperlihatkan evolusi bertahap dari derau Gaussian <em>t</em>=999 menuju bentuk sepatu dan gaun tajam di <em>t</em>=0.</div>
+  <div class="fig-caption"><strong>Figur 5: Kurva Training Loss Keenam Model dan Trajektori Reverse Denoising DDPM.</strong> Vanilla AE, Sparse AE, dan VAE turun mulus dengan kurva train dan validation yang berimpit. Pada Vanilla GAN, loss Generator sempat melonjak ke {vgan_g_max:.2f} di epoch {vgan_g_max_ep} sebelum turun stabil, sedangkan pada DCGAN Discriminator memimpin cukup jauh (D≈{dc_d_end:.2f}, G≈{dc_g_end:.2f}) tetapi tetap menghasilkan bentuk konvolusional yang tajam. DDPM turun monoton pada Noise MSE ({ddpm_start:.4f} ke {ddpm_end:.4f}); baris bawah memperlihatkan perubahan bertahap dari derau Gaussian di <em>t</em>=999 menjadi sepatu dan gaun bersih di <em>t</em>=0.</div>
 </div>
 
 <!-- ==================== BAGIAN VI ==================== -->
-<h2 class="section-hdr page-break">Bagian VI: Pembahasan Kritis, Jawaban Pertanyaan Penelitian (Q1–Q6), dan Rekomendasi Industri</h2>
+<h2 class="section-hdr page-break">Bagian VI: Pembahasan Kritis, Jawaban Pertanyaan Penelitian (Q1 sampai Q6), dan Rekomendasi Industri</h2>
 
 <div class="qa-card">
-  <div class="qa-title">Q1 — Perbandingan Kuantitatif: Reconstruction Fidelity vs. Generative Quality</div>
-  <p>Pada kemampuan rekonstruksi Test Set, <strong>Vanilla AE</strong> mencatat performa terbaik (MSE = <strong>{m['vanilla_ae']['mse']:.5f}</strong>, PSNR = <strong>{m['vanilla_ae']['psnr']:.2f} dB</strong>, SSIM = <strong>{m['vanilla_ae']['ssim']:.4f}</strong>), disusul <strong>Sparse AE</strong> (MSE = <strong>{m['sparse_ae']['mse']:.5f}</strong>, PSNR = <strong>{m['sparse_ae']['psnr']:.2f} dB</strong>, SSIM = <strong>{m['sparse_ae']['ssim']:.4f}</strong>) dan <strong>VAE</strong> (MSE = <strong>{m['vae']['mse']:.5f}</strong>, PSNR = <strong>{m['vae']['psnr']:.2f} dB</strong>, SSIM = <strong>{m['vae']['ssim']:.4f}</strong>). Penambahan penalti sparsity λ‖<em>z</em>‖<sub>1</sub> (λ=5×10<sup>−3</sup>) memaksa {m['sparse_ae']['latent_zero_frac']*100:.2f}% dimensi laten Sparse AE bernilai hampir nol dan memangkas norma L1 hingga {sae_l1_ratio:.2f}× ({m['sparse_ae']['latent_l1_mean']:.2f} vs {m['vanilla_ae']['latent_l1_mean']:.2f}), sehingga kapasitas kanal informasi menyempit dan mengorbankan +{sae_mse_diff:.5f} MSE ({sae_psnr_diff:.2f} dB PSNR) dibanding representasi padat Vanilla AE.</p>
-  <p>Sebaliknya, pada sintesis citra baru dari prior acak 𝒩(0, <strong>I</strong>), skor <strong>FID</strong> memperlihatkan hierarki yang jelas: <strong>DDPM ({m['ddpm']['fid']:.2f}) &lt; DCGAN ({m['dcgan']['fid']:.2f}) &lt;&lt; VAE ({m['vae']['fid']:.2f}) &lt; Vanilla GAN ({m['vanilla_gan']['fid']:.2f})</strong>. Hal ini membuktikan bahwa fidelitas rekonstruksi deterministik tidak berkorelasi dengan kapabilitas generatif: Vanilla AE dan Sparse AE tidak dapat disampel dari prior karena ruang latennya tidak diregulasi, sementara VAE mengorbankan ketajaman demi kontinuitas ELBO.</p>
+  <div class="qa-title">Q1: Perbandingan Kuantitatif Reconstruction Fidelity vs. Generative Quality</div>
+  <p>Untuk rekonstruksi Test Set, Vanilla AE mencapai hasil terbaik (MSE = {m['vanilla_ae']['mse']:.5f}, PSNR = {m['vanilla_ae']['psnr']:.2f} dB, SSIM = {m['vanilla_ae']['ssim']:.4f}), diikuti Sparse AE (MSE = {m['sparse_ae']['mse']:.5f}, PSNR = {m['sparse_ae']['psnr']:.2f} dB, SSIM = {m['sparse_ae']['ssim']:.4f}) dan VAE (MSE = {m['vae']['mse']:.5f}, PSNR = {m['vae']['psnr']:.2f} dB, SSIM = {m['vae']['ssim']:.4f}). Penalti L1 λ‖<em>z</em>‖<sub>1</sub> (λ=5×10<sup>−3</sup>) memaksa {m['sparse_ae']['latent_zero_frac']*100:.2f}% dimensi laten Sparse AE bernilai mendekati nol dan memangkas norma L1 sebesar {sae_l1_ratio:.2f}× ({m['sparse_ae']['latent_l1_mean']:.2f} dibanding {m['vanilla_ae']['latent_l1_mean']:.2f}). Penyempitan kapasitas laten ini menaikkan MSE sebesar +{sae_mse_diff:.5f} ({sae_psnr_diff:.2f} dB PSNR) dibanding representasi padat Vanilla AE.</p>
+  <p>Pada sintesis sampel baru dari prior 𝒩(0, <strong>I</strong>), urutan skor FID dari yang paling rendah adalah DDPM ({m['ddpm']['fid']:.2f}), DCGAN ({m['dcgan']['fid']:.2f}), VAE ({m['vae']['fid']:.2f}), dan Vanilla GAN ({m['vanilla_gan']['fid']:.2f}). Angka ini menunjukkan bahwa galat rekonstruksi yang rendah tidak menjamin kemampuan membangkitkan data baru: Vanilla AE dan Sparse AE tidak memiliki prior yang teratur untuk disampel, sementara VAE menukar ketajaman citra dengan ruang laten yang kontinu.</p>
 </div>
 
 <div class="qa-card">
-  <div class="qa-title">Q2 — Analisis Blurriness vs. Sharp Edges dan Struktur Representasi Fitur</div>
-  <p>Kekaburan (<em>blurriness</em>) pada Vanilla AE, Sparse AE, dan VAE adalah konsekuensi matematis langsung dari minimisasi <em>pixel-wise loss</em> (MSE / BCE). Secara teoretis, nilai optimal <em>x̂</em> yang meminimalkan 𝔼[‖<em>x</em> − <em>x̂</em>‖<sub>2</sub><sup>2</sup> | <em>z</em>] adalah <strong>ekspektasi kondisional</strong> 𝔼[<em>x</em>|<em>z</em>]. Apabila beberapa variasi tepi atau tekstur berpeluang muncul dari kode laten <em>z</em> yang berdekatan (<em>multimodal posterior</em>), rata-rata piksel menghasilkan efek kabur yang meredam frekuensi tinggi. Pada VAE, adanya istilah KL divergence memperparah perataan ini karena <em>posterior overlap</em> meningkat.</p>
-  <p>Sebaliknya, fungsi objektif minimax GAN/DCGAN meminimalkan <strong>divergensi Jensen-Shannon</strong> <em>D</em><sub>JS</sub>(<em>P</em><sub>data</sub> ∥ <em>P</em><sub><em>g</em></sub>) ketika Discriminator optimal. Karena <em>D</em><sub>JS</sub> menghukum berat generator jika menghasilkan sampel kabur yang mudah dikenali sebagai palsu oleh Discriminator (berada di luar manifold citra tajam), Generator terdorong memilih mode tajam pada distribusi data. Sementara itu, penalti L1 pada Sparse AE mengubah struktur fitur tersembunyi dari representasi padat terdistribusi (pada Vanilla AE) menjadi representasi selektif terlokalisasi di mana hanya subset neuron yang aktif untuk tiap pola pakaian.</p>
+  <div class="qa-title">Q2: Analisis Blurriness vs. Sharp Edges dan Struktur Representasi Fitur</div>
+  <p>Efek buram pada Vanilla AE, Sparse AE, dan VAE berasal dari sifat minimisasi <em>pixel-wise loss</em> (MSE atau BCE). Nilai <em>x̂</em> yang meminimalkan 𝔼[‖<em>x</em> − <em>x̂</em>‖<sub>2</sub><sup>2</sup> | <em>z</em>] adalah rata-rata kondisional 𝔼[<em>x</em>|<em>z</em>]. Saat beberapa variasi kontur atau tekstur berpeluang muncul dari kode laten <em>z</em> yang berdekatan, perataan piksel meredam detail frekuensi tinggi dan membuat tepi pakaian tampak kabur. Pada VAE, suku KL divergence menambah tumpang-tindih antar-posterior sehingga perataan ini makin terasa.</p>
+  <p>Sebaliknya, pelatihan minimax pada GAN dan DCGAN meminimalkan divergensi Jensen-Shannon <em>D</em><sub>JS</sub>(<em>P</em><sub>data</sub> ∥ <em>P</em><sub><em>g</em></sub>) ketika Discriminator optimal. Citra kabur langsung ditolak sebagai sampel palsu oleh Discriminator karena berada di luar sebaran citra tajam, sehingga Generator terdorong memilih kontur yang tegas. Pada sisi representasi fitur, penalti L1 membuat hidden layer Sparse AE hanya mengaktifkan sebagian kecil unit untuk tiap jenis pakaian ({m['sparse_ae']['latent_zero_frac']*100:.2f}% unit nol), berbeda dari representasi padat pada Vanilla AE di mana hampir seluruh unit aktif bersamaan.</p>
 </div>
 
 <div class="qa-card">
-  <div class="qa-title">Q3 — Stabilitas Training, Dinamika Arsitektur, dan Verifikasi Generative Trilemma</div>
-  <p>Pada <strong>Vanilla GAN</strong> (MLP), ketiadaan <em>weight sharing</em> spasial membuat Discriminator mudah mengeksploitasi artefak piksel tunggal atau menyebabkan gradien Generator berosilasi tajam di epoch awal (G loss melonjak ke {vgan_g_max:.2f} pada epoch {vgan_g_max_ep} sebelum turun ke {vgan_g_end:.2f}). <strong>DCGAN</strong> memitigasi ketidakstabilan ini melalui prinsip arsitektur konvolusional penuh (<em>strided convolutions</em> menggantikan pooling, penghapusan lapisan FC tersembunyi, <code>BatchNorm2d</code> untuk menstabilkan skala gradien, serta aktivasi <code>LeakyReLU</code> dan inisialisasi 𝒩(0, 0.02)) sehingga menghasilkan FID {m['dcgan']['fid']:.2f} vs {m['vanilla_gan']['fid']:.2f} pada Vanilla GAN—meskipun tetap sensitif terhadap ketidakseimbangan G/D (D={dc_d_end:.2f} vs G={dc_g_end:.2f}).</p>
-  <p>Dibandingkan optimasi <em>adversarial minimax</em> yang non-stasioner, <strong>DDPM</strong> melatih fungsi objektif regresi <em>supervised noise prediction</em> ‖ε − ε<sub>θ</sub>‖<sub>2</sub><sup>2</sup> pada target tetap, menghasilkan kurva training paling stabil dan konvergen monoton ({ddpm_start:.4f} → {ddpm_end:.4f} pada epoch 1–50). Data latensi batch-64 memverifikasi langsung teori <strong>Generative Trilemma</strong> (Sample Quality, Sampling Speed, Mode Coverage):</p>
+  <div class="qa-title">Q3: Stabilitas Training, Dinamika Arsitektur, dan Verifikasi Generative Trilemma</div>
+  <p>Pada Vanilla GAN berbasis MLP, ketiadaan <em>weight sharing</em> spasial membuat Discriminator mudah menangkap ketidakkonsistenan piksel lokal, sehingga loss Generator sempat melonjak ke {vgan_g_max:.2f} di epoch {vgan_g_max_ep} sebelum turun ke {vgan_g_end:.2f}. DCGAN meredam masalah ini lewat konvolusi berstrided tanpa lapisan pooling, penghapusan lapisan fully-connected tersembunyi, <code>BatchNorm2d</code> untuk menjaga skala gradien, aktivasi <code>LeakyReLU</code>, serta inisialisasi bobot 𝒩(0, 0.02). Perubahan arsitektur itu menurunkan FID dari {m['vanilla_gan']['fid']:.2f} menjadi {m['dcgan']['fid']:.2f}, walau pelatihan adversarial tetap sensitif terhadap dominasi Discriminator (D={dc_d_end:.2f}, G={dc_g_end:.2f}).</p>
+  <p>Berbeda dari permainan minimax yang non-stasioner, DDPM melatih regresi <em>noise prediction</em> ‖ε − ε<sub>θ</sub>‖<sub>2</sub><sup>2</sup> pada target derau yang stasioner, sehingga kurvanya turun paling mulus ({ddpm_start:.4f} ke {ddpm_end:.4f} selama 50 epoch). Pengukuran latensi per batch 64 citra mengonfirmasi trade-off Generative Trilemma (kualitas sampel, kecepatan sampling, dan cakupan mode):</p>
   <ul>
-    <li><strong>VAE</strong> unggul di <em>Sampling Speed</em> (<strong>{m['vae']['latency_ms_mean']:.2f} ms/batch</strong>) dan <em>Mode Coverage</em>, tetapi mengorbankan <em>Sample Quality</em> (FID {m['vae']['fid']:.2f}, buram).</li>
-    <li><strong>DCGAN</strong> menyeimbangkan <em>Sample Quality</em> tajam (FID {m['dcgan']['fid']:.2f}) dan <em>Sampling Speed</em> satu-langkah (<strong>{m['dcgan']['latency_ms_mean']:.2f} ms/batch</strong>), namun rentan penurunan keragaman mode / sensitivitas arsitektur.</li>
-    <li><strong>DDPM</strong> memuncaki <em>Sample Quality</em> (FID <strong>{m['ddpm']['fid']:.2f}</strong>) dan <em>Mode Coverage</em>, tetapi membayar harga latensi iteratif <em>T</em>=1000 langkah sebesar <strong>{m['ddpm']['latency_ms_mean']:.2f} ms/batch</strong> (~{ddpm_vs_dcgan_lat:,.0f}× lebih lambat dari DCGAN dan ~{ddpm_vs_vae_lat:,.0f}× lebih lambat dari VAE).</li>
+    <li>VAE menghasilkan sampel paling cepat ({m['vae']['latency_ms_mean']:.2f} ms/batch) dengan cakupan kelas luas, tetapi kualitas visualnya kabur (FID {m['vae']['fid']:.2f}).</li>
+    <li>DCGAN menjaga sampling satu langkah tetap cepat ({m['dcgan']['latency_ms_mean']:.2f} ms/batch) dengan kontur tajam (FID {m['dcgan']['fid']:.2f}), namun arsitekturnya rentan terhadap ketidakseimbangan G dan D.</li>
+    <li>DDPM meraih kualitas sampel terbaik (FID {m['ddpm']['fid']:.2f}) dan cakupan ragam pakaian penuh, tetapi proses denoising iteratif <em>T</em>=1000 langkah membutuhkan {m['ddpm']['latency_ms_mean']:.2f} ms/batch (~{ddpm_vs_dcgan_lat:,.0f}× lebih lambat dari DCGAN dan ~{ddpm_vs_vae_lat:,.0f}× lebih lambat dari VAE).</li>
   </ul>
 </div>
 
 <div class="qa-card">
-  <div class="qa-title">Q4 — Struktur Latent Space dan Fenomena Interpolasi</div>
-  <p>Dalam eksperimen interpolasi linier <em>z</em>(α) = (1−α)<em>z</em><sub>A</sub> + α<em>z</em><sub>B</sub> (Figur 4), <strong>Vanilla AE</strong> dan <strong>Sparse AE</strong> menampilkan artefak visual rusak berbentuk tumpang-tindih bayangan (<em>ghosting</em>) di titik tengah α ∈ [0.4, 0.6]. Hal ini terjadi karena AE deterministik tidak memiliki regulasi kepadatan ruang laten, sehingga setiap citra dipetakan ke titik-titik terisolasi dan menyisakan wilayah kosong (<em>latent space voids</em>) di antara klaster kelas yang belum pernah dilatih oleh Decoder. Sebaliknya, regularisasi <em>D</em><sub>KL</sub>(<em>q</em>(<em>z</em>|<em>x</em>) ∥ 𝒩(0, <strong>I</strong>)) pada <strong>VAE</strong> memaksa posterior tiap sampel saling bertumpang-tindih mengelilingi asal koordinat, membentuk manifold kontinu yang menghasilkan morfing bentuk mulus dari <em>Sneaker</em> ke <em>Dress</em>. Pada <strong>DCGAN</strong>, pengambilan dari prior Gaussian 𝒩(0, <strong>I</strong>) yang terisi penuh oleh konvolusi menghasilkan transisi semantik yang tetap tajam di setiap α, berbeda dengan <strong>Vanilla GAN</strong> yang memperlihatkan transisi kasar berderau.</p>
+  <div class="qa-title">Q4: Struktur Latent Space dan Fenomena Interpolasi</div>
+  <p>Saat dilakukan interpolasi linier <em>z</em>(α) = (1−α)<em>z</em><sub>A</sub> + α<em>z</em><sub>B</sub> (Figur 4), Vanilla AE dan Sparse AE memunculkan artefak bayangan ganda pada α=0.4 dan 0.6. Penyebabnya adalah ketiadaan regulasi kepadatan ruang laten pada autoencoder deterministik: titik data terkumpul dalam klaster terpisah dan meninggalkan wilayah kosong (<em>latent space voids</em>) yang belum pernah dipelajari Decoder. Regularisasi <em>D</em><sub>KL</sub>(<em>q</em>(<em>z</em>|<em>x</em>) ∥ 𝒩(0, <strong>I</strong>)) pada VAE menarik sebaran laten tiap sampel agar saling bertemu di sekitar titik asal, sehingga transisi dari <em>Sneaker</em> ke <em>Dress</em> berlangsung mulus. Pada DCGAN, seluruh ruang prior 𝒩(0, <strong>I</strong>) terpetakan oleh lapisan konvolusi menjadi objek tajam di setiap α, sedangkan Vanilla GAN tetap memunculkan derau piksel sepanjang lintasan.</p>
 </div>
 
 <div class="qa-card">
-  <div class="qa-title">Q5 — Sintesis Pembuktian Batasan MLP Classifier untuk Image Generation</div>
-  <p>Hasil Bagian 2.1 membuktikan secara konsisten bahwa performa klasifikasi tinggi ({mlp['test_accuracy']*100:.2f}%) tidak berbanding lurus dengan kemampuan generatif. Pemodelan <em>P</em>(<em>y</em>|<em>x</em>) bekerja sebagai <em>information bottleneck</em> yang membuang detail piksel intra-kelas (terbukti dari lonjakan Test MSE Frozen Latent Decoder menjadi <strong>{mlp['frozen_decoder_metrics']['mse']:.5f}</strong> berbanding <strong>{m['vanilla_ae']['mse']:.5f}</strong> pada Vanilla AE berdimensi 64 yang sama). Kedua, proyeksi balik langsung <em>W</em><sup>T</sup> gagal total (MSE {mlp['transpose_onehot_metrics']['mse']:.4f} untuk <em>y</em><sub><em>c</em></sub> dan {mlp['transpose_latent_metrics']['mse']:.4f} untuk <em>z</em><sub>MLP</sub>) akibat matriks bobot non-ortogonal (deviasi hingga {mlp['orthogonality']['W1_orthogonality_error']:.2f} pada <em>W</em><sub>1</sub>) dan pemotongan ireversibel ReLU ({mlp['z_mlp_zero_fraction']*100:.2f}% nol). Ketiga, tidak adanya regularisasi <em>P</em>(<em>z</em>) membuat ruang laten <em>z</em><sub>MLP</sub> terkonsentrasi jauh dari distribusi Gaussian standar (‖μ<sub><em>z</em></sub>‖ = {mlp['z_mlp_mu_norm']:.2f}), sehingga sampling acak menghasilkan citra rusak.</p>
+  <div class="qa-title">Q5: Sintesis Pembuktian Batasan MLP Classifier untuk Image Generation</div>
+  <p>Akurasi klasifikasi sebesar {mlp['test_accuracy']*100:.2f}% pada Test Set tidak menghasilkan representasi yang mampu merekonstruksi atau membangkitkan citra. Pertama, objektif <em>P</em>(<em>y</em>|<em>x</em>) bertindak sebagai <em>information bottleneck</em> yang membuang detail intra-kelas, terlihat dari naiknya Test MSE Frozen Latent Decoder menjadi {mlp['frozen_decoder_metrics']['mse']:.5f} dibanding {m['vanilla_ae']['mse']:.5f} pada Vanilla AE berdimensi sama. Kedua, proyeksi balik langsung <em>W</em><sup>T</sup> rusak total (MSE {mlp['transpose_onehot_metrics']['mse']:.4f} dari <em>y</em><sub><em>c</em></sub> dan {mlp['transpose_latent_metrics']['mse']:.4f} dari <em>z</em><sub>MLP</sub>) karena bobot non-ortogonal (deviasi hingga {mlp['orthogonality']['W1_orthogonality_error']:.2f} pada <em>W</em><sub>1</sub>) serta pemotongan ireversibel ReLU ({mlp['z_mlp_zero_fraction']*100:.2f}% nilai nol). Ketiga, tanpa regularisasi <em>P</em>(<em>z</em>), fitur <em>z</em><sub>MLP</sub> terkumpul jauh dari distribusi standar (‖μ<sub><em>z</em></sub>‖ = {mlp['z_mlp_mu_norm']:.2f}), sehingga sampling acak menghasilkan citra pecah.</p>
 </div>
 
 <div class="qa-card">
-  <div class="qa-title">Q6 — Sintesis Rekayasa dan Rekomendasi Deployment Industri</div>
+  <div class="qa-title">Q6: Sintesis Rekayasa dan Rekomendasi Deployment Industri</div>
   <ol>
-    <li><strong>Deteksi Anomali Tanpa Supervisi pada Citra Inspeksi Manufaktur (Vanilla AE vs. Sparse AE):</strong> Direkomendasikan <strong>Sparse Autoencoder</strong>. Meskipun Vanilla AE memiliki Test MSE sedikit lebih rendah ({m['vanilla_ae']['mse']:.5f} vs {m['sparse_ae']['mse']:.5f}), Vanilla AE berisiko bertindak sebagai <em>identity mapping</em> yang tetap merekonstruksi cacat kecil. Penalti sparsity L1 pada Sparse AE memaksa encoder hanya menyimpan <em>basis fitur normal yang dominan</em> ({m['sparse_ae']['latent_zero_frac']*100:.2f}% unit nol, L1 turun {sae_l1_ratio:.2f}×), sehingga pola anomali asing yang tidak cocok dengan kamus fitur jarang menghasilkan lonjakan <em>reconstruction error</em> yang jauh lebih sensitif dan diskriminatif.</li>
-    <li><strong>Filter Avatar Interaktif Waktu-Nyata pada Perangkat Mobile (&lt;30 ms) (Vanilla GAN vs. DCGAN vs. VAE):</strong> Direkomendasikan <strong>DCGAN</strong> (untuk generasi tajam tanpa encoder) atau <strong>VAE</strong> (apabila pipeline membutuhkan modul <em>encode-edit-decode</em> dari citra input pengguna). Dengan latensi <strong>{m['dcgan']['latency_ms_mean']:.2f} ms/batch 64</strong> (&lt;0.1 ms/citra pada GPU) dan FID <strong>{m['dcgan']['fid']:.2f}</strong>, DCGAN berada jauh di bawah anggaran 30 ms sekaligus jauh lebih tajam dibanding VAE (FID {m['vae']['fid']:.2f}) dan lebih koheren dibanding Vanilla GAN (FID {m['vanilla_gan']['fid']:.2f}). Untuk perangkat CPU/NPU mobile ringan, arsitektur konvolusional DCGAN dapat dipangkas menggunakan <em>depthwise separable convolution</em> tanpa mengorbankan anggaran 30 ms.</li>
-    <li><strong>Pembuatan Aset Visual Beresolusi &amp; Berfidelitas Tinggi untuk Industri Kreatif (DCGAN vs. DDPM):</strong> Direkomendasikan <strong>DDPM</strong> (dengan akselerasi sampling seperti DDIM/DPM-Solver pada tahap produksi). Secara empiris, DDPM meraih fidelitas terbaik (FID <strong>{m['ddpm']['fid']:.2f}</strong> vs {m['dcgan']['fid']:.2f} pada DCGAN), stabilitas pelatihan superior tanpa risiko <em>mode collapse</em>, serta kontrol detail tekstural halus (Figur 2D &amp; 5). Pada aset kreatif non-real-time (rendering desain katalog/konsep), waktu inferensi ~{m['ddpm']['latency_ms_mean']/1000:.2f} detik per 64 sampel pada 1.000 langkah masih sangat layak—dan dapat dipangkas 10–20× menggunakan sampler deterministik DDIM (50 langkah) sambil mempertahankan keunggulan kualitas difusi.</li>
+    <li>Deteksi anomali tanpa supervisi pada inspeksi manufaktur (Vanilla AE vs. Sparse AE): Pilih Sparse Autoencoder. Meski Vanilla AE mencatat MSE Test lebih kecil ({m['vanilla_ae']['mse']:.5f} berbanding {m['sparse_ae']['mse']:.5f}), kapasitas padatnya rentan meniru pola cacat kecil seolah citra normal. Penalti sparsity L1 pada Sparse AE memaksa encoder hanya menyimpan basis fitur normal yang dominan ({m['sparse_ae']['latent_zero_frac']*100:.2f}% unit nol, norma L1 turun {sae_l1_ratio:.2f}×), sehingga citra cacat yang menyimpang dari basis tersebut langsung memicu galat rekonstruksi lebih tinggi.</li>
+    <li>Filter avatar interaktif waktu-nyata pada perangkat mobile (&lt;30 ms) (Vanilla GAN vs. DCGAN vs. VAE): Pilih DCGAN bila filter hanya membangkitkan atau memodifikasi fitur secara tajam tanpa encoder input, atau pilih VAE jika pipeline wajib melakukan <em>encode-edit-decode</em> langsung dari kamera pengguna. DCGAN mencatat latensi {m['dcgan']['latency_ms_mean']:.2f} ms per batch 64 (&lt;0.1 ms per citra di GPU) dan FID {m['dcgan']['fid']:.2f}, jauh di bawah batas 30 ms sekaligus jauh lebih tajam dibanding VAE (FID {m['vae']['fid']:.2f}) dan Vanilla GAN (FID {m['vanilla_gan']['fid']:.2f}). Pada NPU/CPU ponsel, blok konvolusi DCGAN juga ringan diganti dengan <em>depthwise separable convolution</em>.</li>
+    <li>Pembuatan aset visual beresolusi dan berfidelitas tinggi untuk industri kreatif (DCGAN vs. DDPM): Pilih DDPM, dengan akselerator sampling seperti DDIM atau DPM-Solver saat deployment. DDPM menghasilkan fidelitas terbaik (FID {m['ddpm']['fid']:.2f} berbanding {m['dcgan']['fid']:.2f} pada DCGAN), pelatihan paling stabil tanpa risiko <em>mode collapse</em>, serta tekstur kain paling bersih (Figur 2D dan 5). Untuk pembuatan aset kreatif offline yang tidak menuntut respons instan, waktu inferensi {m['ddpm']['latency_ms_mean']/1000:.2f} detik per 64 sampel pada 1.000 langkah masih memadai dan dapat dipangkas 10 sampai 20× lewat sampler deterministik DDIM berjumlah 50 langkah.</li>
   </ol>
 </div>
 

@@ -150,10 +150,10 @@ def render_all_architecture_svgs() -> str:
     cards = [
         ("1. MLP Classifier Pendamping & Frozen Latent Decoder (Bagian 2.1)", svg_mlp),
         ("2 & 3. Vanilla Autoencoder & Sparse Autoencoder (L1 Penalty)", svg_ae),
-        ("4. Variational Autoencoder (VAE — Reparameterization & ELBO)", svg_vae),
-        ("5. Vanilla GAN (Fully-Connected Generator & Discriminator)", svg_vgan),
-        ("6. Deep Convolutional GAN (DCGAN — Strided Conv & BatchNorm)", svg_dcgan),
-        ("7. Denoising Diffusion Probabilistic Model (DDPM — UNet28 + Time Emb + EMA)", svg_ddpm),
+        ("4. Variational Autoencoder (VAE: Reparameterization & ELBO)", svg_vae),
+        ("5. Vanilla GAN (Generator & Discriminator Fully-Connected)", svg_vgan),
+        ("6. Deep Convolutional GAN (DCGAN: Strided Conv & BatchNorm)", svg_dcgan),
+        ("7. Denoising Diffusion Probabilistic Model (DDPM: UNet28 + Time Emb + EMA)", svg_ddpm),
     ]
     blocks = "".join(
         f'<div class="diagram-card"><div class="diagram-title">{title}</div>{svg}</div>'
