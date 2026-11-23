@@ -79,6 +79,30 @@ def _train_single_ae(
     }
 
 
+def sparse_ae_loss(cfg: ExperimentConfig, model: SparseAutoencoder, x: torch.Tensor) -> torch.Tensor:
+    """Compute MSE reconstruction loss plus mean L1 sparsity penalty on z."""
+    recon, z = model(x)
+    return F.mse_loss(recon, x) + cfg.sparse_l1_lambda * z.abs().mean()
+
+
+def train_sparse_ae_only(
+    cfg: ExperimentConfig,
+    loaders: Dict[str, DataLoader],
+    device: torch.device,
+) -> Dict[str, Any]:
+    """Train only Sparse Autoencoder and save its checkpoint."""
+    model = SparseAutoencoder(latent_dim=cfg.sparse_latent_dim).to(device)
+    return _train_single_ae(
+        name="Sparse AE",
+        model=model,
+        loss_fn=lambda m, x: sparse_ae_loss(cfg, m, x),
+        epochs=cfg.sparse_ae_epochs,
+        loaders=loaders,
+        device=device,
+        ckpt_path=str(cfg.checkpoint_dir / "sparse_ae.pt"),
+    )
+
+
 def train_all_autoencoders(
     cfg: ExperimentConfig,
     loaders: Dict[str, DataLoader],
@@ -95,11 +119,6 @@ def train_all_autoencoders(
         recon, _ = m(x)
         return F.mse_loss(recon, x)
 
-    def sparse_loss(m: SparseAutoencoder, x: torch.Tensor) -> torch.Tensor:
-        recon, z = m(x)
-        l1_penalty = cfg.sparse_l1_lambda * torch.norm(z, p=1, dim=1).mean()
-        return F.mse_loss(recon, x) + l1_penalty
-
     def vae_loss(m: VariationalAutoencoder, x: torch.Tensor) -> torch.Tensor:
         recon, mu, logvar = m(x)
         loss, _, _ = VariationalAutoencoder.elbo_loss(recon, x, mu, logvar)
@@ -108,7 +127,7 @@ def train_all_autoencoders(
     results: Dict[str, Dict[str, Any]] = {}
     specs: Tuple[Tuple[str, str, nn.Module, Callable[[Any, torch.Tensor], torch.Tensor], int], ...] = (
         ("vanilla_ae", "Vanilla AE", vanilla_ae, vanilla_loss, cfg.ae_epochs),
-        ("sparse_ae", "Sparse AE", sparse_ae, sparse_loss, cfg.sparse_ae_epochs),
+        ("sparse_ae", "Sparse AE", sparse_ae, lambda m, x: sparse_ae_loss(cfg, m, x), cfg.sparse_ae_epochs),
         ("vae", "VAE", vae, vae_loss, cfg.vae_epochs),
     )
     for key, label, model, fn, epochs in specs:

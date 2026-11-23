@@ -2,7 +2,7 @@
 
 import math
 import time
-from typing import Callable, Dict, Tuple
+from typing import Any, Callable, Dict, Tuple
 
 import numpy as np
 import torch

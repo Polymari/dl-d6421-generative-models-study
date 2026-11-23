@@ -30,6 +30,7 @@ def train_ddpm(
     train_losses = []
     epoch_times = []
 
+    amp_enabled = device.type == "cuda"
     for epoch in range(1, cfg.ddpm_epochs + 1):
         unet.train()
         running_loss = 0.0
@@ -39,7 +40,8 @@ def train_ddpm(
         for x, _ in loaders["train"]:
             x = x.to(device)
             optimizer.zero_grad()
-            loss = diffusion.p_losses(x)
+            with torch.amp.autocast("cuda", dtype=torch.bfloat16, enabled=amp_enabled):
+                loss = diffusion.p_losses(x)
             loss.backward()
             torch.nn.utils.clip_grad_norm_(unet.parameters(), 1.0)
             optimizer.step()
@@ -53,8 +55,8 @@ def train_ddpm(
         ep_loss = running_loss / total_n
         train_losses.append(ep_loss)
 
-        if epoch % 10 == 0 or epoch == cfg.ddpm_epochs:
-            print(f"  [DDPM] Epoch {epoch:02d}/{cfg.ddpm_epochs} | Noise MSE Loss: {ep_loss:.5f}")
+        if epoch % 5 == 0 or epoch == cfg.ddpm_epochs:
+            print(f"  [DDPM] Epoch {epoch:02d}/{cfg.ddpm_epochs} | Noise MSE Loss: {ep_loss:.5f} | {epoch_times[-1]:.1f}s", flush=True)
 
     torch.save(unet.state_dict(), cfg.checkpoint_dir / "ddpm_unet.pt")
     torch.save(ema.shadow.state_dict(), cfg.checkpoint_dir / "ddpm_ema.pt")

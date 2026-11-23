@@ -187,6 +187,7 @@ class GaussianDiffusion(nn.Module):
         device: torch.device,
         denoiser: Optional[nn.Module] = None,
         record_steps: Optional[List[int]] = None,
+        use_amp: bool = True,
     ) -> Tuple[torch.Tensor, Dict[int, torch.Tensor]]:
         """Run T-step reverse diffusion from x_T ~ N(0, I) -> x_0 in [0, 1]."""
         net = denoiser if denoiser is not None else self.model
@@ -198,9 +199,11 @@ class GaussianDiffusion(nn.Module):
         if self.timesteps - 1 in record_set:
             trajectory[self.timesteps - 1] = ((x.clamp(-1.0, 1.0) + 1.0) / 2.0).cpu()
 
+        amp_enabled = use_amp and device.type == "cuda"
         for step in reversed(range(self.timesteps)):
             t_batch = torch.full((batch_size,), step, device=device, dtype=torch.long)
-            eps_pred = net(x, t_batch)
+            with torch.amp.autocast("cuda", dtype=torch.bfloat16, enabled=amp_enabled):
+                eps_pred = net(x, t_batch).float()
             beta_t = self.betas[step]
             sqrt_recip_alpha = self.sqrt_recip_alphas[step]
             sqrt_one_minus_abar = self.sqrt_one_minus_alphas_cumprod[step]

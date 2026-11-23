@@ -24,7 +24,7 @@ class ExperimentConfig:
     # Latent dimensions (aligned with Section 2.1 Tahap 4 & Template Table)
     ae_latent_dim: int = 64
     sparse_latent_dim: int = 64
-    sparse_l1_lambda: float = 1e-3
+    sparse_l1_lambda: float = 5e-3
     vae_latent_dim: int = 64
     gan_latent_dim: int = 64
     dcgan_latent_dim: int = 100

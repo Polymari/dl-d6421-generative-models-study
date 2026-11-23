@@ -26,13 +26,13 @@ def plot_fig1_reconstructions(
 ) -> None:
     """Figur 1: Side-by-side Test Set reconstruction grid (8 samples x 4 rows)."""
     rows = [
-        ("Citra Asli (Ground Truth)", gt),
-        ("Vanilla Autoencoder", vanilla_recon),
-        ("Sparse Autoencoder (L1)", sparse_recon),
-        ("Variational AE (VAE)", vae_recon),
+        ("Citra Asli\n(Ground Truth)", gt),
+        ("Vanilla\nAutoencoder", vanilla_recon),
+        ("Sparse AE\n(L1 Penalty)", sparse_recon),
+        ("Variational\nAE (VAE)", vae_recon),
     ]
     n_cols = gt.size(0)
-    fig, axes = plt.subplots(len(rows), n_cols, figsize=(13.5, 6.8))
+    fig, axes = plt.subplots(len(rows), n_cols, figsize=(13.5, 7.2))
     for r_idx, (row_title, imgs) in enumerate(rows):
         for c_idx in range(n_cols):
             ax = axes[r_idx, c_idx]
@@ -43,7 +43,7 @@ def plot_fig1_reconstructions(
                 cls_name = FASHION_MNIST_CLASSES_ID[int(labels[c_idx])]
                 ax.set_title(cls_name, fontsize=9, fontweight="bold", pad=5)
             if c_idx == 0:
-                ax.set_ylabel(row_title, fontsize=9.5, fontweight="bold", rotation=90, labelpad=8)
+                ax.set_ylabel(row_title, fontsize=9, fontweight="bold", rotation=90, labelpad=10)
     fig.suptitle(
         "Figur 1: Perbandingan Rekonstruksi Side-by-Side pada Test Set Fashion-MNIST",
         fontsize=12.5,
@@ -95,13 +95,13 @@ def plot_fig3_mlp_proof(
     out_path: Path,
 ) -> None:
     """Figur 3: 4-panel empirical proof of MLP Classifier weight & latent limitations."""
-    fig = plt.figure(figsize=(14.0, 9.5))
-    gs = fig.add_gridspec(4, 1, height_ratios=[1.0, 2.0, 2.0, 1.35], hspace=0.45)
+    fig = plt.figure(figsize=(14.0, 10.2))
+    gs = fig.add_gridspec(4, 1, height_ratios=[1.15, 2.0, 2.0, 1.35], hspace=0.52)
 
     # Panel 1: Ground Truth (8 images)
     gs1 = gs[0].subgridspec(1, 8, wspace=0.08)
     ax1_hdr = fig.add_subplot(gs[0])
-    ax1_hdr.set_title("(1) Citra Asli Test Set (Ground Truth)", fontsize=10.5, fontweight="bold", loc="left", pad=8)
+    ax1_hdr.set_title("(1) Citra Asli Test Set (Ground Truth)", fontsize=10.5, fontweight="bold", loc="left", pad=22)
     ax1_hdr.axis("off")
     for i in range(8):
         ax = fig.add_subplot(gs1[0, i])
@@ -209,8 +209,8 @@ def plot_fig5_losses_and_ddpm_trajectory(
     out_path: Path,
 ) -> None:
     """Figur 5: Training loss curves for all 6 models + step-by-step DDPM denoising trajectory."""
-    fig = plt.figure(figsize=(14.0, 10.5))
-    outer = fig.add_gridspec(3, 1, height_ratios=[1.1, 1.1, 1.05], hspace=0.38)
+    fig = plt.figure(figsize=(14.0, 10.8))
+    outer = fig.add_gridspec(3, 1, height_ratios=[1.1, 1.1, 1.08], hspace=0.46)
 
     # Row 1: Autoencoders (Vanilla AE, Sparse AE, VAE)
     top_gs = outer[0].subgridspec(1, 3, wspace=0.25)
@@ -268,7 +268,7 @@ def plot_fig5_losses_and_ddpm_trajectory(
         "Sekuens Reverse Diffusion DDPM Langkah demi Langkah (x_T -> x_0)",
         fontsize=10.5,
         fontweight="bold",
-        pad=14,
+        pad=16,
     )
     ax_traj_hdr.axis("off")
 
