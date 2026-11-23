@@ -1,0 +1,25 @@
+# Python & PyTorch artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.ipynb_checkpoints/
+
+# Data, checkpoints & generated heavy artifacts
+data/
+checkpoints/
+results/*.pt
+results/*.pth
+
+# Keep metrics JSON and high-res figures tracked or reproducible?
+# Keep results/metrics.json and figures/ tracked for easy GitHub inspection, ignore raw datasets & weights.
+*.tar.gz
+*.gz
+*.bin
+*.pt
+*.pth
+
+# Temp / scratch HTML or intermediate build files
+report/build/
+.DS_Store
+Thumbs.db
