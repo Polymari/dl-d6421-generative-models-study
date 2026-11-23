@@ -25,7 +25,7 @@ from src.evaluation.visualize import (
 from src.experiments.mlp_proof import run_mlp_proof
 from src.experiments.train_autoencoders import train_all_autoencoders, train_sparse_ae_only
 from src.experiments.train_ddpm import train_ddpm
-from src.experiments.train_gans import train_all_gans
+from src.experiments.train_gans import train_all_gans, train_dcgan_only
 from src.models.autoencoders import SparseAutoencoder, VanillaAutoencoder, VariationalAutoencoder
 from src.models.ddpm import GaussianDiffusion, UNet28
 from src.models.gans import DCGANGenerator, VanillaGenerator
@@ -144,6 +144,20 @@ def run_stage_sparse_ae(cfg: ExperimentConfig, loaders: Dict[str, Any], device: 
         "epoch_time_s": res["mean_epoch_time"],
     }
     _save_json(ae_json_path, ae_data)
+
+
+def run_stage_dcgan(cfg: ExperimentConfig, loaders: Dict[str, Any], device: torch.device) -> None:
+    """Retrain only DCGAN and update results/stage_gan.json."""
+    set_seed(cfg.seed)
+    res = train_dcgan_only(cfg, loaders, device)
+    gan_json_path = cfg.results_dir / "stage_gan.json"
+    gan_data = _load_json(gan_json_path)
+    gan_data["dcgan"] = {
+        "g_losses": res["g_losses"],
+        "d_losses": res["d_losses"],
+        "epoch_time_s": res["mean_epoch_time"],
+    }
+    _save_json(gan_json_path, gan_data)
 
 
 def run_stage_ddpm(cfg: ExperimentConfig, loaders: Dict[str, Any], device: torch.device) -> None:
@@ -484,7 +498,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Generative Models Comparative Study Pipeline")
     parser.add_argument(
         "--stage",
-        choices=["all", "fast", "sparse_ae", "ddpm", "sample_ddpm", "eval"],
+        choices=["all", "fast", "sparse_ae", "dcgan", "ddpm", "sample_ddpm", "eval"],
         default="all",
         help="Run entire pipeline ('all') or a specific resumable stage.",
     )
@@ -503,6 +517,8 @@ def main() -> None:
         run_stage_fast(cfg, loaders, device)
     if args.stage == "sparse_ae":
         run_stage_sparse_ae(cfg, loaders, device)
+    if args.stage == "dcgan":
+        run_stage_dcgan(cfg, loaders, device)
     if args.stage in ("all", "ddpm"):
         run_stage_ddpm(cfg, loaders, device)
     if args.stage in ("all", "sample_ddpm"):

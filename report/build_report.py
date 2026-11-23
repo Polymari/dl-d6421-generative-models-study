@@ -342,22 +342,24 @@ def build_html(cfg: Dict[str, Any], metrics: Dict[str, Any]) -> str:
 
 {svgs_html}
 
-<h3 class="sub-hdr">2.1 Konfigurasi Parameter &amp; Hiperparameter Terstandarisasi</h3>
+<h3 class="sub-hdr">2.1 Konfigurasi Parameter, Jumlah Bobot, dan Hiperparameter Terstandarisasi</h3>
 <table class="data-table">
   <thead>
     <tr>
       <th>Model</th>
       <th>Lapisan Arsitektur Utama</th>
+      <th class="num">Params</th>
       <th>Dim Laten</th>
       <th>Aktivasi</th>
       <th>Optimizer &amp; LR</th>
-      <th>Epoch</th>
+      <th class="num">Epoch</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <td><strong>MLP Classifier</strong></td>
       <td>784 → 256 → 64 → 10</td>
+      <td class="num">218,058</td>
       <td class="num">64 (<em>z</em><sub>MLP</sub>)</td>
       <td>ReLU, Logits</td>
       <td>Adam (1e-3, Cosine)</td>
@@ -366,6 +368,7 @@ def build_html(cfg: Dict[str, Any], metrics: Dict[str, Any]) -> str:
     <tr>
       <td><strong>Frozen Decoder</strong></td>
       <td>64 → 256 → 784 (pada <em>z</em><sub>MLP</sub> beku)</td>
+      <td class="num">218,128</td>
       <td class="num">64</td>
       <td>ReLU, Sigmoid</td>
       <td>Adam (1e-3)</td>
@@ -374,6 +377,7 @@ def build_html(cfg: Dict[str, Any], metrics: Dict[str, Any]) -> str:
     <tr>
       <td><strong>Vanilla AE</strong></td>
       <td>Enc: 784→256→64 | Dec: 64→256→784</td>
+      <td class="num">435,536</td>
       <td class="num">64 (Linear)</td>
       <td>ReLU, Sigmoid</td>
       <td>Adam (1e-3)</td>
@@ -382,6 +386,7 @@ def build_html(cfg: Dict[str, Any], metrics: Dict[str, Any]) -> str:
     <tr>
       <td><strong>Sparse AE</strong></td>
       <td>Enc: 784→256→64 | Dec: 64→256→784</td>
+      <td class="num">435,536</td>
       <td class="num">64 (ReLU+L1)</td>
       <td>ReLU, Sigmoid</td>
       <td>Adam (1e-3, λ=5e-3)</td>
@@ -390,6 +395,7 @@ def build_html(cfg: Dict[str, Any], metrics: Dict[str, Any]) -> str:
     <tr>
       <td><strong>VAE</strong></td>
       <td>784→256→(μ:64, logσ²:64)→256→784</td>
+      <td class="num">451,984</td>
       <td class="num">64 (Gaussian)</td>
       <td>ReLU, Sigmoid</td>
       <td>Adam (1e-3)</td>
@@ -398,6 +404,7 @@ def build_html(cfg: Dict[str, Any], metrics: Dict[str, Any]) -> str:
     <tr>
       <td><strong>Vanilla GAN</strong></td>
       <td>G: 64→256→512→784 | D: 784→512→256→1</td>
+      <td class="num">1,083,921</td>
       <td class="num">64 (Prior)</td>
       <td>LeakyReLU(0.2), Tanh</td>
       <td>Adam (2e-4, β=(0.5,0.999))</td>
@@ -406,14 +413,16 @@ def build_html(cfg: Dict[str, Any], metrics: Dict[str, Any]) -> str:
     <tr>
       <td><strong>DCGAN</strong></td>
       <td>G: ConvT(100→256→128→1) | D: Conv(1→64→128→256)</td>
+      <td class="num">2,213,377</td>
       <td class="num">100 (Prior)</td>
       <td>ReLU/LReLU, BN, Tanh</td>
-      <td>Adam (2e-4, β=(0.5,0.999))</td>
+      <td>Adam (2e-4, β=(0.5,0.999), ls=0.9)</td>
       <td class="num">50</td>
     </tr>
     <tr>
       <td><strong>DDPM</strong></td>
       <td>UNet28 (64→128→256+SelfAttn 7×7), TimeEmb, EMA</td>
+      <td class="num">4,577,665</td>
       <td class="num">28×28 (T=1000)</td>
       <td>SiLU, GroupNorm</td>
       <td>AdamW (2e-4, wd=1e-4)</td>
@@ -442,6 +451,11 @@ def build_html(cfg: Dict[str, Any], metrics: Dict[str, Any]) -> str:
   <li>Matriks bobot non-ortogonal dan pemotongan ReLU: Bobot persegi panjang <em>W</em><sup>(<em>l</em>)</sup> tidak memenuhi (<em>W</em><sup>(<em>l</em>)</sup>)<sup>T</sup> <em>W</em><sup>(<em>l</em>)</sup> = <strong>I</strong>, jadi <em>W</em><sup>T</sup> ≠ <em>W</em><sup>−1</sup>. Pengukuran pada model terlatih mencatat deviasi ortogonalitas relatif ‖<em>W</em><sup>T</sup><em>W</em> − <strong>I</strong>‖<sub>F</sub> / ‖<strong>I</strong>‖<sub>F</sub> sebesar {mlp['orthogonality']['W1_orthogonality_error']:.4f} (<em>W</em><sub>1</sub>), {mlp['orthogonality']['W2_orthogonality_error']:.4f} (<em>W</em><sub>2</sub>), dan {mlp['orthogonality']['W3_orthogonality_error']:.4f} (<em>W</em><sub>3</sub>). Selain itu, fungsi ReLU(<em>u</em>) = max(0, <em>u</em>) membuang nilai negatif secara ireversibel, membuat {mlp['z_mlp_zero_fraction']*100:.2f}% komponen <em>z</em><sub>MLP</sub> bernilai tepat nol.</li>
   <li>Tanpa regularisasi prior <em>P</em>(<em>z</em>): Ruang laten <em>z</em><sub>MLP</sub> tidak dikekang ke distribusi prior seperti 𝒩(0, <strong>I</strong>). Pada Test Set, vektor rata-rata fitur memiliki norma ‖μ<sub><em>z</em></sub>‖<sub>2</sub> = {mlp['z_mlp_mu_norm']:.2f} dengan rata-rata simpangan baku σ̄<sub><em>z</em></sub> = {mlp['z_mlp_sigma_mean']:.2f} dan sebaran miring akibat ReLU.</li>
 </ol>
+
+<div class="callout">
+  <div class="callout-title">Analisis Teoretis <em>P</em>(<em>y</em>|<em>x</em>) vs. <em>P</em>(<em>x</em>) dan Ketidakbalikan Aljabar Linear</div>
+  Secara informasi-teoretis, rantai Markov pelatihan terawasi <em>X</em> → <em>H</em><sub>1</sub> → <em>Z</em><sub>MLP</sub> → <em>Y</em> tunduk pada <em>Data Processing Inequality</em>: optimasi ℒ<sub>CE</sub> hanya mempertahankan mutual information <em>I</em>(<em>Z</em><sub>MLP</sub>; <em>Y</em>) ≤ log<sub>2</sub>(10) ≈ 3.32 bit per sampel dan membuang informasi kondisional <em>H</em>(<em>X</em>|<em>Y</em>) yang mencakup ragam tekstur dan siluet di dalam satu kelas. Sebaliknya, Autoencoder memaksimalkan <em>I</em>(<em>X</em>; <em>Z</em><sub>AE</sub>) agar <em>X</em> dapat dipulihkan dari <em>Z</em><sub>AE</sub>. Dari sisi aljabar linear, proyeksi balik <em>x̂</em> = σ(<em>W</em><sub>1</sub><sup>T</sup> ReLU(<em>W</em><sub>2</sub><sup>T</sup> <em>z</em><sub>MLP</sub>)) mengasumsikan pemetaan ortonormal (<em>W</em><sup>T</sup><em>W</em> = <strong>I</strong>) serta aktivasi bijektif; karena <em>W</em><sub>1</sub> ∈ ℝ<sup>256×784</sup> tidak berkolom ortogonal dan ReLU memangkas setengah ruang vektor, rekonstruksi aljabar langsung merosot menjadi superposisi bobot kasar.
+</div>
 
 <table class="data-table">
   <thead>
@@ -519,7 +533,7 @@ def build_html(cfg: Dict[str, Any], metrics: Dict[str, Any]) -> str:
       <td><strong>Vanilla Autoencoder</strong></td>
       <td>64</td>
       <td class="num">{m['vanilla_ae']['epoch_time_s']:.2f}</td>
-      <td class="num">{m['vanilla_ae']['latency_ms_mean']:.2f}</td>
+      <td class="num">{m['vanilla_ae']['latency_ms_mean']:.2f} ± {m['vanilla_ae']['latency_ms_std']:.2f}</td>
       <td class="num">{m['vanilla_ae']['mse']:.5f}</td>
       <td class="num">{m['vanilla_ae']['psnr']:.2f}</td>
       <td class="num">{m['vanilla_ae']['ssim']:.4f}</td>
@@ -530,7 +544,7 @@ def build_html(cfg: Dict[str, Any], metrics: Dict[str, Any]) -> str:
       <td><strong>Sparse Autoencoder</strong></td>
       <td>64 (L1)</td>
       <td class="num">{m['sparse_ae']['epoch_time_s']:.2f}</td>
-      <td class="num">{m['sparse_ae']['latency_ms_mean']:.2f}</td>
+      <td class="num">{m['sparse_ae']['latency_ms_mean']:.2f} ± {m['sparse_ae']['latency_ms_std']:.2f}</td>
       <td class="num">{m['sparse_ae']['mse']:.5f}</td>
       <td class="num">{m['sparse_ae']['psnr']:.2f}</td>
       <td class="num">{m['sparse_ae']['ssim']:.4f}</td>
@@ -541,7 +555,7 @@ def build_html(cfg: Dict[str, Any], metrics: Dict[str, Any]) -> str:
       <td><strong>Variational AE (VAE)</strong></td>
       <td>64</td>
       <td class="num">{m['vae']['epoch_time_s']:.2f}</td>
-      <td class="num">{m['vae']['latency_ms_mean']:.2f}</td>
+      <td class="num">{m['vae']['latency_ms_mean']:.2f} ± {m['vae']['latency_ms_std']:.2f}</td>
       <td class="num">{m['vae']['mse']:.5f}</td>
       <td class="num">{m['vae']['psnr']:.2f}</td>
       <td class="num">{m['vae']['ssim']:.4f}</td>
@@ -552,8 +566,8 @@ def build_html(cfg: Dict[str, Any], metrics: Dict[str, Any]) -> str:
       <td><strong>Vanilla GAN (MLP)</strong></td>
       <td>64 (Prior)</td>
       <td class="num">{m['vanilla_gan']['epoch_time_s']:.2f}</td>
-      <td class="num">{m['vanilla_gan']['latency_ms_mean']:.2f}</td>
-      <td class="num">N/A</td>
+      <td class="num">{m['vanilla_gan']['latency_ms_mean']:.2f} ± {m['vanilla_gan']['latency_ms_std']:.2f}</td>
+      <td class="num">N/A (Tanpa Encoder)</td>
       <td class="num">N/A</td>
       <td class="num">N/A</td>
       <td class="num">{m['vanilla_gan']['fid']:.2f}</td>
@@ -563,19 +577,19 @@ def build_html(cfg: Dict[str, Any], metrics: Dict[str, Any]) -> str:
       <td><strong>DCGAN</strong></td>
       <td>100 (Prior)</td>
       <td class="num">{m['dcgan']['epoch_time_s']:.2f}</td>
-      <td class="num">{m['dcgan']['latency_ms_mean']:.2f}</td>
-      <td class="num">N/A</td>
+      <td class="num">{m['dcgan']['latency_ms_mean']:.2f} ± {m['dcgan']['latency_ms_std']:.2f}</td>
+      <td class="num">N/A (Tanpa Encoder)</td>
       <td class="num">N/A</td>
       <td class="num">N/A</td>
       <td class="num">{m['dcgan']['fid']:.2f}</td>
-      <td>Cukup Stabil (D={dc_d_end:.2f}, G={dc_g_end:.2f} dominan)</td>
+      <td>Cukup Stabil (D={dc_d_end:.2f}, G={dc_g_end:.2f})</td>
     </tr>
     <tr>
       <td><strong>DDPM (UNet28 + EMA)</strong></td>
       <td>28×28</td>
       <td class="num">{m['ddpm']['epoch_time_s']:.2f}</td>
-      <td class="num">{m['ddpm']['latency_ms_mean']:.2f}</td>
-      <td class="num">N/A</td>
+      <td class="num">{m['ddpm']['latency_ms_mean']:.2f} ± {m['ddpm']['latency_ms_std']:.2f}</td>
+      <td class="num">N/A (Denoising Model)</td>
       <td class="num">N/A</td>
       <td class="num">N/A</td>
       <td class="num"><strong>{m['ddpm']['fid']:.2f}</strong></td>
@@ -606,7 +620,7 @@ def build_html(cfg: Dict[str, Any], metrics: Dict[str, Any]) -> str:
 
 <div class="figure-block">
   <img src="{fig4_uri}" alt="Figur 4 Interpolasi Ruang Laten Linier" />
-  <div class="fig-caption"><strong>Figur 4: Interpolasi Ruang Laten Linier <em>z</em>(α) = (1−α)<em>z</em><sub>A</sub> + α<em>z</em><sub>B</sub> (α ∈ [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]).</strong> Pada Vanilla AE dan Sparse AE, perpindahan antara <em>Sneaker</em> (α=0) dan <em>Dress</em> (α=1) melewati ruang kosong (<em>latent space voids</em>) di sekitar α=0.4 sampai 0.6, memunculkan bayangan ganda. VAE bertransisi halus tanpa gambar pecah, Vanilla GAN tetap berderau di seluruh langkah, dan DCGAN beralih tajam dari jaket ke gaun lalu celana panjang.</div>
+  <div class="fig-caption"><strong>Figur 4: Interpolasi Ruang Laten Linier <em>z</em>(α) = (1−α)<em>z</em><sub>A</sub> + α<em>z</em><sub>B</sub> (α ∈ [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]).</strong> Pada Vanilla AE, Sparse AE, dan VAE, interpolasi dilakukan pada pasangan uji <em>Sneaker</em> (α=0) dan <em>Dress</em> (α=1); pada GAN dan DCGAN (tanpa encoder), interpolasi dilakukan antara dua vektor prior acak. Vanilla AE dan Sparse AE melewati ruang kosong (<em>latent space voids</em>) di α=0.4 sampai 0.6 sehingga memunculkan bayangan ganda. VAE bertransisi halus tanpa gambar pecah, Vanilla GAN tetap berderau di seluruh langkah, dan DCGAN beralih tajam dari atasan berlengan panjang terang menjadi kaus berlengan pendek gelap.</div>
 </div>
 
 <div class="figure-block">
@@ -625,8 +639,8 @@ def build_html(cfg: Dict[str, Any], metrics: Dict[str, Any]) -> str:
 
 <div class="qa-card">
   <div class="qa-title">Q2: Analisis Blurriness vs. Sharp Edges dan Struktur Representasi Fitur</div>
-  <p>Efek buram pada Vanilla AE, Sparse AE, dan VAE berasal dari sifat minimisasi <em>pixel-wise loss</em> (MSE atau BCE). Nilai <em>x̂</em> yang meminimalkan 𝔼[‖<em>x</em> − <em>x̂</em>‖<sub>2</sub><sup>2</sup> | <em>z</em>] adalah rata-rata kondisional 𝔼[<em>x</em>|<em>z</em>]. Saat beberapa variasi kontur atau tekstur berpeluang muncul dari kode laten <em>z</em> yang berdekatan, perataan piksel meredam detail frekuensi tinggi dan membuat tepi pakaian tampak kabur. Pada VAE, suku KL divergence menambah tumpang-tindih antar-posterior sehingga perataan ini makin terasa.</p>
-  <p>Sebaliknya, pelatihan minimax pada GAN dan DCGAN meminimalkan divergensi Jensen-Shannon <em>D</em><sub>JS</sub>(<em>P</em><sub>data</sub> ∥ <em>P</em><sub><em>g</em></sub>) ketika Discriminator optimal. Citra kabur langsung ditolak sebagai sampel palsu oleh Discriminator karena berada di luar sebaran citra tajam, sehingga Generator terdorong memilih kontur yang tegas. Pada sisi representasi fitur, penalti L1 membuat hidden layer Sparse AE hanya mengaktifkan sebagian kecil unit untuk tiap jenis pakaian ({m['sparse_ae']['latent_zero_frac']*100:.2f}% unit nol), berbeda dari representasi padat pada Vanilla AE di mana hampir seluruh unit aktif bersamaan.</p>
+  <p>Efek buram pada Vanilla AE, Sparse AE, dan VAE berasal dari sifat <em>mode-averaging</em> pada minimisasi <em>pixel-wise loss</em> (MSE atau BCE). Nilai <em>x̂</em> yang meminimalkan 𝔼[‖<em>x</em> − <em>x̂</em>‖<sub>2</sub><sup>2</sup> | <em>z</em>] secara analitik adalah rata-rata kondisional 𝔼[<em>x</em>|<em>z</em>]. Saat beberapa variasi kontur atau tekstur berpeluang muncul dari kode laten <em>z</em> yang berdekatan, perataan piksel meredam frekuensi tinggi sehingga tepi pakaian tampak kabur. Pada VAE, suku KL divergence menambah tumpang-tindih antar-posterior dan mendorong perilaku <em>zero-avoiding</em> (menutupi seluruh sebaran data termasuk ruang di antara mode), sehingga perataan makin terasa.</p>
+  <p>Sebaliknya, pelatihan minimax pada GAN dan DCGAN bersifat <em>mode-seeking</em> karena meminimalkan divergensi Jensen-Shannon <em>D</em><sub>JS</sub>(<em>P</em><sub>data</sub> ∥ <em>P</em><sub><em>g</em></sub>) ketika Discriminator optimal. Citra kabur berada di daerah kerapatan rendah antara dua mode tajam, sehingga langsung ditolak sebagai sampel palsu oleh Discriminator dan memaksa Generator memilih kontur yang tegas. Pada DDPM, regresi ε<sub>θ</sub>(<em>x</em><sub><em>t</em></sub>, <em>t</em>) mengestimasi fungsi skor ∇<sub><em>x</em></sub> log <em>p</em><sub><em>t</em></sub>(<em>x</em>) di berbagai skala derau, sehingga struktur global dan detail tajam terbentuk bertahap tanpa kolaps mode maupun keburaman rata-rata. Pada sisi representasi fitur, penalti L1 membuat hidden layer Sparse AE hanya mengaktifkan sebagian kecil unit untuk tiap jenis pakaian ({m['sparse_ae']['latent_zero_frac']*100:.2f}% unit nol), berbeda dari representasi padat pada Vanilla AE di mana hampir seluruh unit aktif bersamaan.</p>
 </div>
 
 <div class="qa-card">
@@ -638,6 +652,23 @@ def build_html(cfg: Dict[str, Any], metrics: Dict[str, Any]) -> str:
     <li>DCGAN menjaga sampling satu langkah tetap cepat ({m['dcgan']['latency_ms_mean']:.2f} ms/batch) dengan kontur tajam (FID {m['dcgan']['fid']:.2f}), namun arsitekturnya rentan terhadap ketidakseimbangan G dan D.</li>
     <li>DDPM meraih kualitas sampel terbaik (FID {m['ddpm']['fid']:.2f}) dan cakupan ragam pakaian penuh, tetapi proses denoising iteratif <em>T</em>=1000 langkah membutuhkan {m['ddpm']['latency_ms_mean']:.2f} ms/batch (~{ddpm_vs_dcgan_lat:,.0f}× lebih lambat dari DCGAN dan ~{ddpm_vs_vae_lat:,.0f}× lebih lambat dari VAE).</li>
   </ul>
+  <table class="data-table" style="margin-top:5px;">
+    <thead>
+      <tr>
+        <th>Keluarga Model</th>
+        <th>Sample Quality (FID)</th>
+        <th>Sampling Speed (ms/b64)</th>
+        <th>Mode Coverage</th>
+        <th>Stabilitas Training</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>VAE</strong></td><td>Rendah (buram, {m['vae']['fid']:.2f})</td><td>Sangat Cepat ({m['vae']['latency_ms_mean']:.2f} ms)</td><td>Tinggi (ELBO covering)</td><td>Tinggi (stasioner)</td></tr>
+      <tr><td><strong>Vanilla GAN</strong></td><td>Rendah (derau MLP, {m['vanilla_gan']['fid']:.2f})</td><td>Sangat Cepat ({m['vanilla_gan']['latency_ms_mean']:.2f} ms)</td><td>Rendah-Sedang</td><td>Rendah (osilasi awal)</td></tr>
+      <tr><td><strong>DCGAN</strong></td><td>Tinggi (tajam, {m['dcgan']['fid']:.2f})</td><td>Cepat ({m['dcgan']['latency_ms_mean']:.2f} ms)</td><td>Sedang (sensitif)</td><td>Sedang (minimax)</td></tr>
+      <tr><td><strong>DDPM</strong></td><td>Tertinggi ({m['ddpm']['fid']:.2f})</td><td>Lambat ({m['ddpm']['latency_ms_mean']:.2f} ms)</td><td>Tinggi (penuh)</td><td>Tertinggi (noise MSE)</td></tr>
+    </tbody>
+  </table>
 </div>
 
 <div class="qa-card">
@@ -653,9 +684,9 @@ def build_html(cfg: Dict[str, Any], metrics: Dict[str, Any]) -> str:
 <div class="qa-card">
   <div class="qa-title">Q6: Sintesis Rekayasa dan Rekomendasi Deployment Industri</div>
   <ol>
-    <li>Deteksi anomali tanpa supervisi pada inspeksi manufaktur (Vanilla AE vs. Sparse AE): Pilih Sparse Autoencoder. Meski Vanilla AE mencatat MSE Test lebih kecil ({m['vanilla_ae']['mse']:.5f} berbanding {m['sparse_ae']['mse']:.5f}), kapasitas padatnya rentan meniru pola cacat kecil seolah citra normal. Penalti sparsity L1 pada Sparse AE memaksa encoder hanya menyimpan basis fitur normal yang dominan ({m['sparse_ae']['latent_zero_frac']*100:.2f}% unit nol, norma L1 turun {sae_l1_ratio:.2f}×), sehingga citra cacat yang menyimpang dari basis tersebut langsung memicu galat rekonstruksi lebih tinggi.</li>
-    <li>Filter avatar interaktif waktu-nyata pada perangkat mobile (&lt;30 ms) (Vanilla GAN vs. DCGAN vs. VAE): Pilih DCGAN bila filter hanya membangkitkan atau memodifikasi fitur secara tajam tanpa encoder input, atau pilih VAE jika pipeline wajib melakukan <em>encode-edit-decode</em> langsung dari kamera pengguna. DCGAN mencatat latensi {m['dcgan']['latency_ms_mean']:.2f} ms per batch 64 (&lt;0.1 ms per citra di GPU) dan FID {m['dcgan']['fid']:.2f}, jauh di bawah batas 30 ms sekaligus jauh lebih tajam dibanding VAE (FID {m['vae']['fid']:.2f}) dan Vanilla GAN (FID {m['vanilla_gan']['fid']:.2f}). Pada NPU/CPU ponsel, blok konvolusi DCGAN juga ringan diganti dengan <em>depthwise separable convolution</em>.</li>
-    <li>Pembuatan aset visual beresolusi dan berfidelitas tinggi untuk industri kreatif (DCGAN vs. DDPM): Pilih DDPM, dengan akselerator sampling seperti DDIM atau DPM-Solver saat deployment. DDPM menghasilkan fidelitas terbaik (FID {m['ddpm']['fid']:.2f} berbanding {m['dcgan']['fid']:.2f} pada DCGAN), pelatihan paling stabil tanpa risiko <em>mode collapse</em>, serta tekstur kain paling bersih (Figur 2D dan 5). Untuk pembuatan aset kreatif offline yang tidak menuntut respons instan, waktu inferensi {m['ddpm']['latency_ms_mean']/1000:.2f} detik per 64 sampel pada 1.000 langkah masih memadai dan dapat dipangkas 10 sampai 20× lewat sampler deterministik DDIM berjumlah 50 langkah.</li>
+    <li>Deteksi anomali tanpa supervisi pada inspeksi manufaktur (Vanilla AE vs. Sparse AE): Pilih Sparse Autoencoder (435,536 parameter, {m['sparse_ae']['latency_ms_mean']:.2f} ms/batch 64). Meski Vanilla AE mencatat MSE Test lebih kecil ({m['vanilla_ae']['mse']:.5f} berbanding {m['sparse_ae']['mse']:.5f}), kapasitas padatnya rentan meniru pola cacat kecil seolah citra normal. Penalti sparsity L1 pada Sparse AE memaksa encoder hanya menyimpan basis fitur normal yang dominan ({m['sparse_ae']['latent_zero_frac']*100:.2f}% unit nol, norma L1 turun {sae_l1_ratio:.2f}×), sehingga citra cacat yang menyimpang dari basis tersebut langsung memicu galat rekonstruksi lebih tinggi.</li>
+    <li>Filter avatar interaktif waktu-nyata pada perangkat mobile (&lt;30 ms) (Vanilla GAN vs. DCGAN vs. VAE): Pilih DCGAN bila filter hanya membangkitkan atau memodifikasi fitur secara tajam tanpa encoder input, atau pilih VAE jika pipeline wajib melakukan <em>encode-edit-decode</em> langsung dari kamera pengguna. Generator DCGAN (1,781,504 parameter) mencatat latensi {m['dcgan']['latency_ms_mean']:.2f} ms per batch 64 (~{m['dcgan']['latency_ms_mean']/64:.3f} ms per citra di GPU) dan FID {m['dcgan']['fid']:.2f}, jauh di bawah batas 30 ms sekaligus jauh lebih tajam dibanding VAE (451,984 parameter, {m['vae']['latency_ms_mean']:.2f} ms/b64, FID {m['vae']['fid']:.2f}) dan Vanilla GAN (Generator 550,416 parameter, FID {m['vanilla_gan']['fid']:.2f}). Pada NPU/CPU ponsel, blok konvolusi DCGAN juga ringan diganti dengan <em>depthwise separable convolution</em>.</li>
+    <li>Pembuatan aset visual beresolusi dan berfidelitas tinggi untuk industri kreatif (DCGAN vs. DDPM): Pilih DDPM (UNet28 4,577,665 parameter), dengan akselerator sampling seperti DDIM atau DPM-Solver saat deployment. DDPM menghasilkan fidelitas terbaik (FID {m['ddpm']['fid']:.2f} berbanding {m['dcgan']['fid']:.2f} pada DCGAN), pelatihan paling stabil tanpa risiko <em>mode collapse</em>, serta tekstur kain paling bersih (Figur 2D dan 5). Untuk pembuatan aset kreatif offline yang tidak menuntut respons instan, waktu inferensi {m['ddpm']['latency_ms_mean']/1000:.2f} detik per 64 sampel pada 1.000 langkah masih memadai dan dapat dipangkas 20× (menjadi ~{(m['ddpm']['latency_ms_mean']/1000)/20:.2f} detik/batch) lewat sampler deterministik DDIM berjumlah 50 langkah.</li>
   </ol>
 </div>
 
